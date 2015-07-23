@@ -59,7 +59,7 @@ func main() {
 	}
 
 	if err := validateIP(response.IP); err != nil {
-		log.Println("IP mismatch: %s", err)
+		log.Printf("IP mismatch: %s\n", err)
 		os.Exit(1)
 	}
 
