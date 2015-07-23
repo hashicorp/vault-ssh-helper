@@ -56,6 +56,8 @@ bootstrap:
 
 install:
 	@sudo cp bin/vault-ssh-agent /usr/local/bin
+	@mkdir -p /etc/vault
+	@sudo cp ./vault.hcl /etc/vault
 
 
 .PHONY: bin default generate test dev vet bootstrap testacc
