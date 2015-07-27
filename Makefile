@@ -60,4 +60,4 @@ install:
 	@sudo cp ./vault.hcl /etc/vault
 
 
-.PHONY: bin default generate test dev vet bootstrap testacc
+.PHONY: bin default generate test dev vet bootstrap testacc install

@@ -14,58 +14,79 @@ import (
 )
 
 func main() {
+	os.Exit(Run(os.Args[1:]))
+}
+
+// Retrieves the key from user and talks to vault server to see if it is valid.
+func Run(args []string) int {
+	// Reading the location of vault server from config file.
 	var vaultConfig VaultConfig
 	contents, err := ioutil.ReadFile("/etc/vault/vault.hcl")
 	if !os.IsNotExist(err) {
 		obj, err := hcl.Parse(string(contents))
 		if err != nil {
 			log.Println("Error parsing Vault address")
-			os.Exit(1)
+			return 1
 		}
 
 		if err := hcl.DecodeObject(&vaultConfig, obj); err != nil {
 			log.Println("Error decoding Vault address")
-			os.Exit(1)
+			return 1
 		}
+	} else {
+		log.Println("Error finding vault agent config file")
+		return 1
 	}
 
+	// Creating a default client configuration for communicating with vault server.
 	clientConfig := api.DefaultConfig()
-	clientConfig.Address = vaultConfig.Key
+
+	// Pointing the client to the actual address of vault server.
+	clientConfig.Address = vaultConfig.VaultAddr
+
+	// Creating the client object
 	client, err := api.NewClient(clientConfig)
 	if err != nil {
 		log.Printf("Error creating api client: %s\n", err)
-		os.Exit(1)
+		return 1
 	}
 
+	// Reading the one-time-password from the prompt. This is enabled
+	// by supplying 'expose_authtok' option to pam module config.
 	bytes, _ := ioutil.ReadAll(os.Stdin)
 	otp := strings.TrimSuffix(string(bytes), string('\x00'))
 
 	log.Printf("OTP: %s\n", otp)
 
+	// Checking if an entry with supplied OTP exists in vault server.
 	response, err := client.SSHAgent().Verify(otp)
 	if err != nil {
 		log.Printf("OTP verification failed")
-		os.Exit(1)
+		return 1
 	}
 
+	// PAM_USER represents the username for which authentication is being
+	// requested. If the response from vault server mentions the username
+	// associated with the OTP. It has to be a match.
 	if response.Username != os.Getenv("PAM_USER") {
 		log.Println("Username name mismatched")
-		os.Exit(1)
+		return 1
 	}
 
-	if response.Valid != "yes" {
-		log.Println("OTP mismatched")
-		os.Exit(1)
-	}
-
+	// The IP address to which the OTP is associated should be one among
+	// the network interface addresses of the machine in which agent is
+	// running.
 	if err := validateIP(response.IP); err != nil {
 		log.Printf("IP mismatch: %s\n", err)
-		os.Exit(1)
+		return 1
 	}
 
 	log.Printf("Authentication successful\n")
+	return 0
 }
 
+// Finds out if given IP address belongs to the IP addresses associated with
+// the network interfaces of the machine in which agent is running.
 func validateIP(ipStr string) error {
 	ip := net.ParseIP(ipStr)
 	interfaces, err := net.Interfaces()
@@ -73,7 +94,10 @@ func validateIP(ipStr string) error {
 		return err
 	}
 	for _, iface := range interfaces {
-		addrs, _ := iface.Addrs()
+		addrs, err := iface.Addrs()
+		if err != nil {
+			return fmt.Errorf("Error finding interface addresses")
+		}
 		for _, addr := range addrs {
 			_, ipnet, err := net.ParseCIDR(addr.String())
 			if err != nil {
@@ -88,5 +112,5 @@ func validateIP(ipStr string) error {
 }
 
 type VaultConfig struct {
-	Key string `hcl:"VAULT_ADDR"`
+	VaultAddr string `hcl:"VAULT_ADDR"`
 }
