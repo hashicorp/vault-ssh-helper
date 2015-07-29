@@ -18,6 +18,7 @@ dev: generate
 # test runs the unit tests and vets the code
 test: generate
 	TF_ACC= godep go test $(TEST) $(TESTARGS) -timeout=30s -parallel=4
+	@sh -c "'$(CURDIR)/scripts/build.sh'"
 
 # testacc runs acceptance tests
 testacc: generate
@@ -55,7 +56,7 @@ bootstrap:
 	done
 
 install:
-	@sudo cp bin/vault-ssh-agent /usr/local/bin
+	@sudo cp $(GOPATH)/bin/vault-ssh-agent /usr/local/bin
 	@mkdir -p /etc/vault
 	@sudo cp ./vault.hcl /etc/vault
 

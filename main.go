@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/vault-ssh-agent/api"
+	vaultapi "github.com/hashicorp/vault/api"
 
 	"github.com/hashicorp/hcl"
 )
@@ -19,9 +21,32 @@ func main() {
 
 // Retrieves the key from user and talks to vault server to see if it is valid.
 func Run(args []string) int {
+	log.Printf("Testing args: %#v\n", args)
+
+	var configFilePath, sshMountPoint string
+	flags := flag.NewFlagSet("ssh-agent", flag.ContinueOnError)
+	flags.StringVar(&configFilePath, "config-file", "", "")
+	flags.StringVar(&sshMountPoint, "ssh-mount-point", "ssh", "")
+
+	flags.Usage = func() {
+		log.Println("Usage: vault-ssh-agent -config-file=<config-file> [-ssh-mount-point=<mount-name>]")
+	}
+
+	if err := flags.Parse(args); err != nil {
+		log.Println(fmt.Sprintf("Error parsing flags: '%s'", err))
+		return 1
+	}
+
+	args = flags.Args()
+
+	if configFilePath == "" {
+		log.Println("Missing config-file param value")
+		return 1
+	}
+
 	// Reading the location of vault server from config file.
 	var vaultConfig VaultConfig
-	contents, err := ioutil.ReadFile("/etc/vault/vault.hcl")
+	contents, err := ioutil.ReadFile(configFilePath)
 	if !os.IsNotExist(err) {
 		obj, err := hcl.Parse(string(contents))
 		if err != nil {
@@ -39,13 +64,13 @@ func Run(args []string) int {
 	}
 
 	// Creating a default client configuration for communicating with vault server.
-	clientConfig := api.DefaultConfig()
+	clientConfig := vaultapi.DefaultConfig()
 
 	// Pointing the client to the actual address of vault server.
 	clientConfig.Address = vaultConfig.VaultAddr
 
 	// Creating the client object
-	client, err := api.NewClient(clientConfig)
+	client, err := vaultapi.NewClient(clientConfig)
 	if err != nil {
 		log.Printf("Error creating api client: %s\n", err)
 		return 1
@@ -56,10 +81,8 @@ func Run(args []string) int {
 	bytes, _ := ioutil.ReadAll(os.Stdin)
 	otp := strings.TrimSuffix(string(bytes), string('\x00'))
 
-	log.Printf("OTP: %s\n", otp)
-
 	// Checking if an entry with supplied OTP exists in vault server.
-	response, err := client.SSHAgent().Verify(otp)
+	response, err := api.Agent(client, sshMountPoint).Verify(otp)
 	if err != nil {
 		log.Printf("OTP verification failed")
 		return 1
