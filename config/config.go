@@ -8,6 +8,8 @@ import (
 	"github.com/hashicorp/hcl"
 )
 
+// VaultConfig is a structure which represents the entries from the agent's
+// configuration file.
 type VaultConfig struct {
 	VaultAddr     string `hcl:"VAULT_ADDR"`
 	SSHMountPoint string `hcl:"SSH_MOUNT_POINT"`
@@ -16,6 +18,8 @@ type VaultConfig struct {
 	TLSSkipVerify bool   `hcl:"TLS_SKIP_VERIFY"`
 }
 
+// Loads agent's configuration from the file and populates the corresponding
+// in memory structure.
 func LoadConfig(path string) (*VaultConfig, error) {
 	var config VaultConfig
 	contents, err := ioutil.ReadFile(path)

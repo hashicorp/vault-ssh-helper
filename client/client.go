@@ -16,6 +16,9 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
+// Returns a new client for the given configuration. If the configuration
+// supplies Vault SSL certificates, then the client will have tls configured
+// in its transport.
 func NewClient(config *config.VaultConfig) (*api.Client, error) {
 	// Creating a default client configuration for communicating with vault server.
 	clientConfig := api.DefaultConfig()
@@ -63,6 +66,7 @@ func NewClient(config *config.VaultConfig) (*api.Client, error) {
 	return client, nil
 }
 
+// Loads the certificate from given path and creates a certificate pool from it.
 func loadCACert(path string) (*x509.CertPool, error) {
 	certs, err := loadCertFromPEM(path)
 	if err != nil {
@@ -77,6 +81,8 @@ func loadCACert(path string) (*x509.CertPool, error) {
 	return result, nil
 }
 
+// Loads the certificates present in the given directory and creates a
+// certificate pool from it.
 func loadCAPath(path string) (*x509.CertPool, error) {
 	result := x509.NewCertPool()
 	fn := func(path string, info os.FileInfo, err error) error {
@@ -102,6 +108,7 @@ func loadCAPath(path string) (*x509.CertPool, error) {
 	return result, filepath.Walk(path, fn)
 }
 
+// Creates a certificate from the given path
 func loadCertFromPEM(path string) ([]*x509.Certificate, error) {
 	pemCerts, err := ioutil.ReadFile(path)
 	if err != nil {

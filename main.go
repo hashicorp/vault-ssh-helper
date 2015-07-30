@@ -20,14 +20,12 @@ func main() {
 
 // Retrieves the key from user and talks to vault server to see if it is valid.
 func Run(args []string) int {
-	log.Printf("Testing args: %#v\n", args)
-
 	var configFilePath string
 	flags := flag.NewFlagSet("ssh-agent", flag.ContinueOnError)
 	flags.StringVar(&configFilePath, "config-file", "", "")
 
 	flags.Usage = func() {
-		log.Println("Usage: vault-ssh-agent -config-file=<config-file> [-ssh-mount-point=<mount-name>]")
+		log.Println("Usage: vault-ssh-agent -config-file=<config-file>")
 	}
 
 	if err := flags.Parse(args); err != nil {
@@ -48,6 +46,8 @@ func Run(args []string) int {
 		return 1
 	}
 
+	log.Printf("SSH Mount point: %s\n", config.SSHMountPoint)
+
 	client, err := client.NewClient(config)
 	if err != nil {
 		log.Printf("Error creating api client: %s\n", err)
@@ -56,13 +56,17 @@ func Run(args []string) int {
 
 	// Reading the one-time-password from the prompt. This is enabled
 	// by supplying 'expose_authtok' option to pam module config.
-	bytes, _ := ioutil.ReadAll(os.Stdin)
+	bytes, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		log.Printf("Error reading OTP from prompt: %s\n", err)
+	}
+
 	otp := strings.TrimSuffix(string(bytes), string('\x00'))
 
 	// Checking if an entry with supplied OTP exists in vault server.
 	response, err := api.Agent(client, config.SSHMountPoint).Verify(otp)
 	if err != nil {
-		log.Printf("OTP verification failed")
+		log.Printf("OTP verification failed: %s\n", err)
 		return 1
 	}
 
@@ -70,7 +74,7 @@ func Run(args []string) int {
 	// requested. If the response from vault server mentions the username
 	// associated with the OTP. It has to be a match.
 	if response.Username != os.Getenv("PAM_USER") {
-		log.Println("Username name mismatched")
+		log.Println("Username name mismatched. VaultEntry:%s, AgentUsername:%s\n", response.Username, os.Getenv("PAM_USER"))
 		return 1
 	}
 
@@ -78,11 +82,11 @@ func Run(args []string) int {
 	// the network interface addresses of the machine in which agent is
 	// running.
 	if err := validateIP(response.IP); err != nil {
-		log.Printf("IP mismatch: %s\n", err)
+		log.Printf("Error validating IP: %s\n", err)
 		return 1
 	}
 
-	log.Printf("Authentication successful\n")
+	log.Printf("%s@%s Authenticated!\n", response.Username, response.IP)
 	return 0
 }
 

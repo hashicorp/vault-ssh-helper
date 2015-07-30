@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/hashicorp/vault/api"
 	"github.com/mitchellh/mapstructure"
@@ -30,7 +29,6 @@ func (c *SSHAgent) Verify(otp string) (*SSHVerifyResp, error) {
 		"otp": otp,
 	}
 	verifyPath := fmt.Sprintf("/v1/%s/verify", c.Path)
-	log.Printf("URL Verify: %s", verifyPath)
 	r := c.c.NewRequest("PUT", verifyPath)
 	if err := r.SetJSONBody(data); err != nil {
 		return nil, err
@@ -48,7 +46,7 @@ func (c *SSHAgent) Verify(otp string) (*SSHVerifyResp, error) {
 	}
 
 	if secret.Data == nil {
-		return nil, err
+		return nil, nil
 	}
 
 	var verifyResp SSHVerifyResp
