@@ -11,8 +11,7 @@ CA_CERT=""
 # SSL certificate.
 CA_PATH=""
 
-# Do not verify TLS certificate. 
-# Highly not recommended.
+# Skip TLS certificate verification. Highly not recommended.
 #
 # (Boolean) 
 TLS_SKIP_VERIFY=false
