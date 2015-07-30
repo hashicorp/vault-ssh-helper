@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/hashicorp/vault/api"
 	"github.com/mitchellh/mapstructure"
@@ -28,7 +29,9 @@ func (c *SSHAgent) Verify(otp string) (*SSHVerifyResp, error) {
 	data := map[string]interface{}{
 		"otp": otp,
 	}
-	r := c.c.NewRequest("PUT", fmt.Sprintf("/v1/%s/verify", c.Path))
+	verifyPath := fmt.Sprintf("/v1/%s/verify", c.Path)
+	log.Printf("URL Verify: %s", verifyPath)
+	r := c.c.NewRequest("PUT", verifyPath)
 	if err := r.SetJSONBody(data); err != nil {
 		return nil, err
 	}

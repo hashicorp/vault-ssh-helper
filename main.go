@@ -23,10 +23,9 @@ func main() {
 func Run(args []string) int {
 	log.Printf("Testing args: %#v\n", args)
 
-	var configFilePath, sshMountPoint string
+	var configFilePath string
 	flags := flag.NewFlagSet("ssh-agent", flag.ContinueOnError)
 	flags.StringVar(&configFilePath, "config-file", "", "")
-	flags.StringVar(&sshMountPoint, "ssh-mount-point", "ssh", "")
 
 	flags.Usage = func() {
 		log.Println("Usage: vault-ssh-agent -config-file=<config-file> [-ssh-mount-point=<mount-name>]")
@@ -82,7 +81,7 @@ func Run(args []string) int {
 	otp := strings.TrimSuffix(string(bytes), string('\x00'))
 
 	// Checking if an entry with supplied OTP exists in vault server.
-	response, err := api.Agent(client, sshMountPoint).Verify(otp)
+	response, err := api.Agent(client, vaultConfig.SSHMountPoint).Verify(otp)
 	if err != nil {
 		log.Printf("OTP verification failed")
 		return 1
@@ -135,5 +134,6 @@ func validateIP(ipStr string) error {
 }
 
 type VaultConfig struct {
-	VaultAddr string `hcl:"VAULT_ADDR"`
+	VaultAddr     string `hcl:"VAULT_ADDR"`
+	SSHMountPoint string `hcl:"SSH_MOUNT_POINT"`
 }
