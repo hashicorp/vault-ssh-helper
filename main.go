@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/hashicorp/vault-ssh-agent/api"
 	"github.com/hashicorp/vault-ssh-agent/client"
 	"github.com/hashicorp/vault-ssh-agent/config"
 	"github.com/hashicorp/vault-ssh-agent/helper/agent"
@@ -50,12 +51,24 @@ func Run(args []string) error {
 
 	client, err := client.NewClient(config)
 	if err != nil {
-		return fmt.Errorf("error creating api client: %s\n", err)
+		return fmt.Errorf("error creating client: %s\n", err)
 	}
 
-	err = agent.VerifyOTP(client, config.SSHMountPoint)
-	if err != nil {
-		return fmt.Errorf("error verifying OTP: %s", err)
+	if verify {
+		echoResp, err := api.SSHAgent(client, config.SSHMountPoint).VaultEcho()
+		if err != nil {
+			return fmt.Errorf("error verifying agent installation: %s", err)
+		}
+		log.Printf("msg: %#v '%s'", echoResp, echoResp.Msg)
+		if echoResp.Msg != "vault-echo" {
+			return fmt.Errorf("could not ping vault server")
+		}
+		log.Printf("Agent vefified successfully!\n")
+	} else {
+		err = agent.VerifyOTP(client, config.SSHMountPoint)
+		if err != nil {
+			return fmt.Errorf("error verifying OTP: %s", err)
+		}
 	}
 	return nil
 }

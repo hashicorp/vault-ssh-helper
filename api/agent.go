@@ -21,6 +21,46 @@ func SSHAgent(c *api.Client, path string) *Agent {
 	}
 }
 
+// SSHVerifyResp is a structure representing the fields in vault server's
+// response.
+type SSHVerifyResp struct {
+	Username string `mapstructure:"username"`
+	IP       string `mapstructure:"ip"`
+}
+
+// SSHEchoResp is a structure representing the fields in vault server's
+// echo response
+type SSHEchoResp struct {
+	Msg string `mapstructure:"echo"`
+}
+
+func (c *Agent) VaultEcho() (*SSHEchoResp, error) {
+	echoPath := fmt.Sprintf("/v1/%s/echo", c.Path)
+	r := c.c.NewRequest("GET", echoPath)
+
+	resp, err := c.c.RawRequest(r)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	secret, err := api.ParseSecret(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	if secret.Data == nil {
+		return nil, nil
+	}
+
+	var echoResp SSHEchoResp
+	err = mapstructure.Decode(secret.Data, &echoResp)
+	if err != nil {
+		return nil, err
+	}
+	return &echoResp, nil
+}
+
 // Verifies if the key provided by user is present in vault server. If yes,
 // the response will contain the IP address and username associated with the
 // key.
@@ -55,11 +95,4 @@ func (c *Agent) Verify(otp string) (*SSHVerifyResp, error) {
 		return nil, err
 	}
 	return &verifyResp, nil
-}
-
-// SSHVerifyResp is a structure representing the fields in vault server's
-// response.
-type SSHVerifyResp struct {
-	Username string `json:"username"`
-	IP       string `json:"ip"`
 }
