@@ -55,7 +55,7 @@ func TestSSHAgent_Verify(t *testing.T) {
 	}
 	client.SetToken("ssh-agent")
 
-	resp, err := Agent(client, config.SSHMountPoint).Verify("test-otp")
+	resp, err := SSHAgent(client, config.SSHMountPoint).Verify("test-otp")
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}

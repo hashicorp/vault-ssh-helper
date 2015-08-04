@@ -8,14 +8,14 @@ import (
 )
 
 // SSHAgent is used to perform authentication related operations
-type SSHAgent struct {
+type Agent struct {
 	c    *api.Client
 	Path string
 }
 
 // SSHAgent is used to return the client for authentication related API calls.
-func Agent(c *api.Client, path string) *SSHAgent {
-	return &SSHAgent{
+func SSHAgent(c *api.Client, path string) *Agent {
+	return &Agent{
 		c:    c,
 		Path: path,
 	}
@@ -24,7 +24,7 @@ func Agent(c *api.Client, path string) *SSHAgent {
 // Verifies if the key provided by user is present in vault server. If yes,
 // the response will contain the IP address and username associated with the
 // key.
-func (c *SSHAgent) Verify(otp string) (*SSHVerifyResp, error) {
+func (c *Agent) Verify(otp string) (*SSHVerifyResp, error) {
 	data := map[string]interface{}{
 		"otp": otp,
 	}
