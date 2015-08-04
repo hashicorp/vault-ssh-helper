@@ -138,10 +138,10 @@ $ bin/vault-ssh-agent
 
 If you're developing a specific package, you can run tests for just that
 package by specifying the `TEST` variable. For example below, only
-`vault` package tests will be run.
+`api` package tests will be run.
 
 ```sh
-$ make test TEST=./vault
+$ make test TEST=./api
 ...
 ```
 
