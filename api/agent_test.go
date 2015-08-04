@@ -1,17 +1,18 @@
-package client
+package api
 
 import (
-	"bytes"
+	"encoding/json"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"testing"
 
+	"github.com/hashicorp/vault-ssh-agent/client"
 	"github.com/hashicorp/vault-ssh-agent/config"
+	"github.com/hashicorp/vault/api"
 )
 
-func TestSSHAgent_NewClient(t *testing.T) {
+func TestSSHAgent_Verify(t *testing.T) {
 	ln, err := net.Listen("tcp", "127.0.0.1:0")
 	if err != nil {
 		t.Fatalf("err: %s", err)
@@ -26,7 +27,16 @@ func TestSSHAgent_NewClient(t *testing.T) {
 			if cookie.Value != "ssh-agent" {
 				t.Fatalf("bad cookie")
 			}
-			w.Write([]byte("vault-response"))
+			var httpResp interface{}
+			secret := api.Secret{
+				Data: map[string]interface{}{
+					"username": "testuser",
+					"ip":       "127.0.0.1",
+				},
+			}
+			httpResp = secret
+			enc := json.NewEncoder(w)
+			enc.Encode(httpResp)
 		}),
 	}
 
@@ -39,21 +49,18 @@ func TestSSHAgent_NewClient(t *testing.T) {
 	}
 	config.VaultAddr = fmt.Sprintf("http://%s", ln.Addr())
 
-	client, err := NewClient(config)
+	client, err := client.NewClient(config)
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
 	client.SetToken("ssh-agent")
 
-	resp, err := client.RawRequest(client.NewRequest("PUT", "/"))
+	resp, err := Agent(client, config.SSHMountPoint).Verify("test-otp")
 	if err != nil {
 		t.Fatalf("err: %s", err)
 	}
 
-	var buf bytes.Buffer
-	io.Copy(&buf, resp.Body)
-
-	if buf.String() != "vault-response" {
-		t.Fatalf("bad response")
+	if resp.Username != "testuser" && resp.IP != "127.0.0.1" {
+		t.Fatal("bad: response: %#v", resp)
 	}
 }
