@@ -76,7 +76,7 @@ func Run(args []string) error {
 	log.Printf("[INFO] Using SSH Mount point: %s", config.SSHMountPoint)
 	var otp string
 	if verify {
-		otp = agent.VerifyEchoRequest
+		otp = api.VerifyEchoRequest
 	} else {
 		// Reading the one-time-password from the prompt. This is enabled
 		// by supplying 'expose_authtok' option to pam module config.

@@ -10,13 +10,6 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
-// Echo request and response messages. This has to be in sync with the constants used
-// in Vault's source code.
-const (
-	VerifyEchoRequest  = "verify-echo-request"
-	VerifyEchoResponse = "verify-echo-response"
-)
-
 // Structure representing the agent's verification request.
 type SSHVerifyRequest struct {
 	// Http client to communicate with Vault
@@ -50,8 +43,8 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	}
 
 	// If OTP was an echo request, check the response for echo response and return
-	if req.OTP == VerifyEchoRequest {
-		if resp.Message == VerifyEchoResponse {
+	if req.OTP == api.VerifyEchoRequest {
+		if resp.Message == api.VerifyEchoResponse {
 			log.Printf("[INFO] Agent verification successful")
 			return nil
 		} else {
