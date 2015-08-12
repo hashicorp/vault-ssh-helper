@@ -10,11 +10,11 @@ import (
 // VaultConfig is a structure which represents the entries from the agent's
 // configuration file.
 type VaultConfig struct {
-	VaultAddr     string `hcl:"VAULT_ADDR"`
-	SSHMountPoint string `hcl:"SSH_MOUNT_POINT"`
-	CACert        string `hcl:"CA_CERT"`
-	CAPath        string `hcl:"CA_PATH"`
-	TLSSkipVerify bool   `hcl:"TLS_SKIP_VERIFY"`
+	VaultAddr     string `hcl:"vault_addr"`
+	SSHMountPoint string `hcl:"ssh_mount_point"`
+	CACert        string `hcl:"ca_cert"`
+	CAPath        string `hcl:"ca_path"`
+	TLSSkipVerify bool   `hcl:"tls_skip_verify"`
 }
 
 // Loads agent's configuration from the file and populates the corresponding
