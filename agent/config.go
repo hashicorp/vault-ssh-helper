@@ -1,8 +1,13 @@
 package agent
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"io/ioutil"
+	"net"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/hashicorp/hcl"
 )
@@ -15,6 +20,26 @@ type VaultConfig struct {
 	CACert        string `hcl:"ca_cert"`
 	CAPath        string `hcl:"ca_path"`
 	TLSSkipVerify bool   `hcl:"tls_skip_verify"`
+}
+
+func (c *VaultConfig) TLSClient(certPool *x509.CertPool) *http.Client {
+	tlsConfig := &tls.Config{
+		InsecureSkipVerify: c.TLSSkipVerify,
+		MinVersion:         tls.VersionTLS12,
+		RootCAs:            certPool,
+	}
+
+	client := *http.DefaultClient
+	client.Transport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		Dial: (&net.Dialer{
+			Timeout:   30 * time.Second,
+			KeepAlive: 30 * time.Second,
+		}).Dial,
+		TLSClientConfig:     tlsConfig,
+		TLSHandshakeTimeout: 10 * time.Second,
+	}
+	return &client
 }
 
 // Loads agent's configuration from the file and populates the corresponding

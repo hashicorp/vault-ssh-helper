@@ -1,15 +1,11 @@
 package agent
 
 import (
-	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
 	"io/ioutil"
-	"net"
-	"net/http"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/hashicorp/vault/api"
 )
@@ -35,28 +31,10 @@ func NewClient(config *VaultConfig) (*api.Client, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		tlsConfig := &tls.Config{
-			InsecureSkipVerify: config.TLSSkipVerify,
-			MinVersion:         tls.VersionTLS12,
-			RootCAs:            certPool,
-		}
-
-		client := *http.DefaultClient
-		client.Transport = &http.Transport{
-			Proxy: http.ProxyFromEnvironment,
-			Dial: (&net.Dialer{
-				Timeout:   30 * time.Second,
-				KeepAlive: 30 * time.Second,
-			}).Dial,
-			TLSClientConfig:     tlsConfig,
-			TLSHandshakeTimeout: 10 * time.Second,
-		}
-
-		clientConfig.HttpClient = &client
+		clientConfig.HttpClient = config.TLSClient(certPool)
 	}
 
-	// Creating the client object
+	// Creating the client object for the given configuration
 	client, err := api.NewClient(clientConfig)
 	if err != nil {
 		return nil, err

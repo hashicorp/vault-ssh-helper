@@ -11,6 +11,14 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
+// Reads the OTP from the prompt and sends the OTP to vault server. Server searches
+// for an entry corresponding to the OTP. If there exists one, it responds with the
+// IP address and username associated with it. The username returned should match the
+// username for which authentication is requested (environment variable PAM_USER holds
+// this value).
+//
+// IP address returned by vault should match the addresses of network interfaces or
+// it should belong to the list of allowed CIDR blocks in the config file.
 func VerifyOTP(client *api.Client, mountPoint string) error {
 	// Reading the one-time-password from the prompt. This is enabled
 	// by supplying 'expose_authtok' option to pam module config.
