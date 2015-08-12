@@ -2,14 +2,23 @@ package agent
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net"
 	"os"
-	"strings"
 
 	"github.com/hashicorp/vault/api"
 )
+
+const (
+	VerifyEchoRequest  = "verify-echo-request"
+	VerifyEchoResponse = "verify-echo-response"
+)
+
+type SSHVerifyRequest struct {
+	Client     *api.Client
+	MountPoint string
+	OTP        string
+}
 
 // Reads the OTP from the prompt and sends the OTP to vault server. Server searches
 // for an entry corresponding to the OTP. If there exists one, it responds with the
@@ -19,36 +28,36 @@ import (
 //
 // IP address returned by vault should match the addresses of network interfaces or
 // it should belong to the list of allowed CIDR blocks in the config file.
-func VerifyOTP(client *api.Client, mountPoint string) error {
-	// Reading the one-time-password from the prompt. This is enabled
-	// by supplying 'expose_authtok' option to pam module config.
-	bytes, err := ioutil.ReadAll(os.Stdin)
+func VerifyOTP(req *SSHVerifyRequest) error {
+	// Checking if an entry with supplied OTP exists in vault server.
+	resp, err := SSHAgent(req.Client, req.MountPoint).Verify(req.OTP)
 	if err != nil {
 		return err
 	}
 
-	otp := strings.TrimSuffix(string(bytes), string('\x00'))
-
-	// Checking if an entry with supplied OTP exists in vault server.
-	response, err := SSHAgent(client, mountPoint).Verify(otp)
-	if err != nil {
-		return err
+	if req.OTP == VerifyEchoRequest {
+		if resp.Message == VerifyEchoResponse {
+			log.Printf("[INFO] Agent verification successful")
+			return nil
+		} else {
+			return fmt.Errorf("[ERROR] Invalid echo response")
+		}
 	}
 
 	// PAM_USER represents the username for which authentication is being
 	// requested. If the response from vault server mentions the username
 	// associated with the OTP. It has to be a match.
-	if response.Username != os.Getenv("PAM_USER") {
+	if resp.Username != os.Getenv("PAM_USER") {
 		return fmt.Errorf("[ERROR] Username name mismatch")
 	}
 
 	// The IP address to which the OTP is associated should be one among
 	// the network interface addresses of the machine in which agent is
 	// running.
-	if err := validateIP(response.IP); err != nil {
+	if err := validateIP(resp.IP); err != nil {
 		return err
 	}
-	log.Printf("[INFO] %s@%s Authenticated!", response.Username, response.IP)
+	log.Printf("[INFO] %s@%s Authenticated!", resp.Username, resp.IP)
 	return nil
 }
 

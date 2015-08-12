@@ -3,8 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/vault-ssh-agent/agent"
 )
@@ -19,7 +21,7 @@ import (
 func main() {
 	err := Run(os.Args[1:])
 	if err != nil {
-		log.Printf("[ERROR] Authentication failed: %s", err)
+		log.Printf("[ERROR]: %s", err)
 		// Since this is not a pam module, exiting with appropriate error
 		// code does not make sense. Any non-zero exit value is considered
 		// authentication failure.
@@ -55,27 +57,28 @@ func Run(args []string) error {
 		return err
 	}
 
-	log.Printf("[INFO] SSH Mount point: %s", config.SSHMountPoint)
-
 	client, err := agent.NewClient(config)
 	if err != nil {
 		return err
 	}
 
+	log.Printf("[INFO] Using SSH Mount point: %s", config.SSHMountPoint)
+	var otp string
 	if verify {
-		echoResp, err := agent.SSHAgent(client, config.SSHMountPoint).VaultEcho()
-		if err != nil {
-			return err
-		}
-		if echoResp.Msg != "vault-echo" {
-			return fmt.Errorf("[ERROR] SSH echo message mismatch")
-		}
-		log.Printf("[INFO] Agent verified successfully!")
+		otp = agent.VerifyEchoRequest
 	} else {
-		err = agent.VerifyOTP(client, config.SSHMountPoint)
+		// Reading the one-time-password from the prompt. This is enabled
+		// by supplying 'expose_authtok' option to pam module config.
+		otpBytes, err := ioutil.ReadAll(os.Stdin)
 		if err != nil {
 			return err
 		}
+		otp = strings.TrimSuffix(string(otpBytes), string('\x00'))
 	}
-	return nil
+
+	return agent.VerifyOTP(&agent.SSHVerifyRequest{
+		Client:     client,
+		MountPoint: config.SSHMountPoint,
+		OTP:        otp,
+	})
 }
