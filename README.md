@@ -22,11 +22,12 @@ Usage
 | `config-file` | The path to the configuration file. The properties of config file are mentioned below.
 
 **[Note]: Refer the below configuration for Linux. It will differ for each platform.**
+
 Agent Configuration
---------------------------------
+-------------------
+Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL]. By proxy, this means that Agent's configuration is JSON-compatible. For more information, please see the [HCL Specification][HCL].
 
-Name the config file with `.hcl` extension (**`vault.hcl`**)
-
+### Properties 
 |Property           |Description|
 |-------------------|-----------|
 |`vault_addr`       | Address of the Vault server.
@@ -36,7 +37,9 @@ Name the config file with `.hcl` extension (**`vault.hcl`**)
 |`tls_skip_verify`  | Skip TLS certificate verification. Highly not recommended.
 |`allowed_cidr_list`| List of comma seperated CIDR blocks. If the IP used by user to connect to this machine is different than the address of network interface, in other words, if the address is NATed, then agent will not authenticate the IP returned by Vault server. In those cases, the IP returned by Vault will be matched with the CIDR blocks mentioned here. If it matches, the authentication succeeds. Use with caution.
 
-Sample:
+**`vault_addr` and `ssh_mount_point` are required properties.**
+
+Sample `vault.hcl`:
 ```shell
 vault_addr="http://127.0.0.1:8200"
 ssh_mount_point="ssh"
@@ -47,30 +50,38 @@ tls_skip_verify=false
 PAM Configuration
 --------------------------------
 
-**`/etc/pam.d/sshd`**
+```
+/etc/pam.d/sshd
+```
 
 1) Comment out the previous authentication mechanism. "common-auth" represents
 the standard linux authentication module and is used by many applications.
 Do not modify "common-auth" file.
 
-**`#@include common-auth`**
+```
+#@include common-auth
+```
 
 2) pam_exec.so runs external commands. The external command in this case is
 vault-ssh-agent. If the agent binary terminates with exit code 0 if authentication
 is successful. If not it fails with exit code 1.
 
-**`auth requisite pam_exec.so expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault/vault.hcl`**
+```
+auth requisite pam_exec.so expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault/vault.hcl
+```
 
-'requisite' indicates that, if the external command fails, the authentication
- should fail.
-
-'expose_authtok' provides the binary access to the password entered by the user.
+| `requisite` | If the external command fails, the authentication should fail.
+| `expose_authtok` | Binary can access the password entered at the prompt.
+| `log` | Agent's log file.
+| `config-file` | Parameter to `vault-ssh-agent` which is a path to agent's configuration file.
 
 3) Proper return from authentication flow. There will be a pipe open which listens
 to the response of the authentication. Unfortunately, pam_exec.so is not closing
 this pipe and pam_unix is.
 
-**`auth optional pam_unix.so no_set_pass use_first_pass nodelay`**
+```
+auth optional pam_unix.so no_set_pass use_first_pass nodelay
+```
 
 'optional' indicates that this is not a mandatory step for authentication to succeed.
 
@@ -84,17 +95,23 @@ as its input and tries to authenticate.
 SSHD Configuration
 --------------------------------
 
-**`/etc/ssh/sshd_config`**
+```
+/etc/ssh/sshd_config
+```
 
 1) Enable challenge response authentication. This is nothing but keyboard-interactive
 authentication.
 
-**`ChallengeResponseAuthentication yes`**
+```
+ChallengeResponseAuthentication yes
+```
 
 2) Enabling this option is mandatory. Without this PAM authentication modules will
 not be triggered.
 
-**`UsePAM yes`**
+```
+UsePAM yes
+```
 
 3) [Optional] Disable password authentication. Both keyboard-interactive and
 password mechanisms prompts for "Password", which can be confusing. In other
@@ -103,7 +120,9 @@ If all the responses are invalid, then the mechanism switches to password
 authentication. Again, there will be "Password" prompts. Only this time, the
 responses are checked against the password database at the target machine.
 
-**`PasswordAuthentication no`**
+```
+PasswordAuthentication no
+```
 
 
 Developing Vault-ssh-agent
@@ -151,3 +170,5 @@ $ make test TEST=./agent
 ...
 ```
 
+
+[HCL]: https://github.com/hashicorp/hcl "HashiCorp Configuration Language (HCL)"
