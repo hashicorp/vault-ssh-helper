@@ -34,7 +34,7 @@ Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL
 |`tls_skip_verify`  |Skip TLS certificate verification. Highly not recommended.
 
 Sample `agent_config.hcl`:
-```shell
+```hcl
 vault_addr="http://127.0.0.1:8200"
 ssh_mount_point="ssh"
 ca_cert="/etc/vault.d/vault.crt"
@@ -45,7 +45,7 @@ PAM Configuration
 --------------------------------
 Modify `/etc/pam.d/sshd` file. 
 
-```
+```hcl
 #@include common-auth
 auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault.d/agent_config.hcl
 auth optional pam_unix.so no_set_pass use_first_pass nodelay
@@ -66,7 +66,7 @@ Next, configure the agent.
 |`log`            |Agent's log file.
 |`config-file`    |Parameter to `vault-ssh-agent`, the path to config file.
 
-Lastly, return from PAM if agent authenticates the client successfully. This is a hack to close an open pipe and return.
+Lastly, return if agent authenticates the client successfully. This is a hack to gracefully return by closing an open pipe.
 
 |Option          |Description |
 |----------------|------------|
@@ -81,7 +81,7 @@ SSHD Configuration
 --------------------------------
 Modify `/etc/ssh/sshd_config` file.
 
-```
+```hcl
 ChallengeResponseAuthentication yes
 UsePAM yes
 PasswordAuthentication no
