@@ -54,6 +54,7 @@ auth optional pam_unix.so no_set_pass use_first_pass nodelay
 Firstly, comment out the previous authentication mechanism `common-auth`, standard linux authentication module.
 
 Next, configure the agent.
+
 |Keyword          |Description |
 |-----------------|------------|
 |`auth`           |PAM type that the configuration applies to.
@@ -66,6 +67,7 @@ Next, configure the agent.
 |`config-file`    |Parameter to `vault-ssh-agent`, the path to config file.
 
 Lastly, return from PAM if agent authenticates the client successfully. This is a hack to close an open pipe and return.
+
 |Option          |Description |
 |----------------|------------|
 |`auth`          |PAM type that the configuration applies to.
