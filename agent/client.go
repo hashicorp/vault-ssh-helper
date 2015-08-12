@@ -13,7 +13,7 @@ import (
 // Returns a new client for the given configuration. If the configuration
 // supplies Vault SSL certificates, then the client will have tls configured
 // in its transport.
-func NewClient(config *VaultConfig) (*api.Client, error) {
+func NewClient(config *api.SSHAgentConfig) (*api.Client, error) {
 	// Creating a default client configuration for communicating with vault server.
 	clientConfig := api.DefaultConfig()
 

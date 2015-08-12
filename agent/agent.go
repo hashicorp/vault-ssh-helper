@@ -31,7 +31,7 @@ type SSHVerifyRequest struct {
 	OTP string
 
 	// Structure containing configuration parameters of SSH agent
-	Config *VaultConfig
+	Config *api.SSHAgentConfig
 }
 
 // Reads the OTP from the prompt and sends the OTP to vault server. Server searches
@@ -79,10 +79,14 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 
 // Finds out if given IP address belongs to the IP addresses associated with
 // the network interfaces of the machine in which agent is running.
+//
+// If none of the interface addresses match the given IP, then it is search in
+// the comma seperated list of CIDR blocks passed in as second parameter. This
+// list is supplied as part of agent's configuration.
 func validateIP(ipStr string, cidrList string) error {
 	ip := net.ParseIP(ipStr)
 
-	// Search
+	// Scanning network interfaces to find an address match
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return err
@@ -103,6 +107,8 @@ func validateIP(ipStr string, cidrList string) error {
 		}
 	}
 
+	// None of the network interface addresses matched the given IP.
+	// Now, try to find a match with the given CIDR blocks.
 	cidrs := strings.Split(cidrList, ",")
 	for _, cidr := range cidrs {
 		valid, err := validateCIDR(ip, cidr)
@@ -117,6 +123,7 @@ func validateIP(ipStr string, cidrList string) error {
 	return fmt.Errorf("Invalid IP")
 }
 
+// Checks if the given CIDR block encompasses the given IP address.
 func validateCIDR(ip net.IP, cidr string) (bool, error) {
 	_, ipnet, err := net.ParseCIDR(cidr)
 	if err != nil {

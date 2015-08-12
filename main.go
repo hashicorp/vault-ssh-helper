@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/vault-ssh-agent/agent"
+	"github.com/hashicorp/vault/api"
 )
 
 // This binary will be run as a command as part of pam authentication flow.
@@ -58,7 +59,7 @@ func Run(args []string) error {
 		return fmt.Errorf("missing config-file param")
 	}
 
-	config, err := agent.LoadConfig(configFilePath)
+	config, err := api.LoadSSHAgentConfig(configFilePath)
 	if err != nil {
 		return err
 	}
