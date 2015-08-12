@@ -15,13 +15,16 @@ import (
 // VaultConfig is a structure which represents the entries from the agent's
 // configuration file.
 type VaultConfig struct {
-	VaultAddr     string `hcl:"vault_addr"`
-	SSHMountPoint string `hcl:"ssh_mount_point"`
-	CACert        string `hcl:"ca_cert"`
-	CAPath        string `hcl:"ca_path"`
-	TLSSkipVerify bool   `hcl:"tls_skip_verify"`
+	VaultAddr       string `hcl:"vault_addr"`
+	SSHMountPoint   string `hcl:"ssh_mount_point"`
+	CACert          string `hcl:"ca_cert"`
+	CAPath          string `hcl:"ca_path"`
+	TLSSkipVerify   bool   `hcl:"tls_skip_verify"`
+	AllowedCidrList string `hcl:"allowed_cidr_list"`
 }
 
+// Returns a HTTP client that uses TLS verification (TLS 1.2) with the given
+// certificate pool.
 func (c *VaultConfig) TLSClient(certPool *x509.CertPool) *http.Client {
 	tlsConfig := &tls.Config{
 		InsecureSkipVerify: c.TLSSkipVerify,

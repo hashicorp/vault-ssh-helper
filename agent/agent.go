@@ -5,19 +5,33 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/hashicorp/vault/api"
 )
 
+// Echo request and response messages. This has to be in sync with the constants used
+// in Vault's source code.
 const (
 	VerifyEchoRequest  = "verify-echo-request"
 	VerifyEchoResponse = "verify-echo-response"
 )
 
+// Structure representing the agent's verification request.
 type SSHVerifyRequest struct {
-	Client     *api.Client
+	// Http client to communicate with Vault
+	Client *api.Client
+
+	// Mount point of SSH backend at Vault
 	MountPoint string
-	OTP        string
+
+	// This can be either an echo message (see #VerifyEchoRequest), which if set
+	// Vault will respond with echo response (see #VerifyEchoResponse). OR, it
+	// should be the one-time-password entered by the user at the prompt.
+	OTP string
+
+	// Structure containing configuration parameters of SSH agent
+	Config *VaultConfig
 }
 
 // Reads the OTP from the prompt and sends the OTP to vault server. Server searches
@@ -35,12 +49,13 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 		return err
 	}
 
+	// If OTP was an echo request, check the response for echo response and return
 	if req.OTP == VerifyEchoRequest {
 		if resp.Message == VerifyEchoResponse {
 			log.Printf("[INFO] Agent verification successful")
 			return nil
 		} else {
-			return fmt.Errorf("[ERROR] Invalid echo response")
+			return fmt.Errorf("Invalid echo response")
 		}
 	}
 
@@ -48,23 +63,26 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// requested. If the response from vault server mentions the username
 	// associated with the OTP. It has to be a match.
 	if resp.Username != os.Getenv("PAM_USER") {
-		return fmt.Errorf("[ERROR] Username name mismatch")
+		return fmt.Errorf("Username name mismatch")
 	}
 
 	// The IP address to which the OTP is associated should be one among
 	// the network interface addresses of the machine in which agent is
 	// running.
-	if err := validateIP(resp.IP); err != nil {
+	if err := validateIP(resp.IP, req.Config.AllowedCidrList); err != nil {
 		return err
 	}
+
 	log.Printf("[INFO] %s@%s Authenticated!", resp.Username, resp.IP)
 	return nil
 }
 
 // Finds out if given IP address belongs to the IP addresses associated with
 // the network interfaces of the machine in which agent is running.
-func validateIP(ipStr string) error {
+func validateIP(ipStr string, cidrList string) error {
 	ip := net.ParseIP(ipStr)
+
+	// Search
 	interfaces, err := net.Interfaces()
 	if err != nil {
 		return err
@@ -75,14 +93,37 @@ func validateIP(ipStr string) error {
 			return err
 		}
 		for _, addr := range addrs {
-			_, ipnet, err := net.ParseCIDR(addr.String())
+			valid, err := validateCIDR(ip, addr.String())
 			if err != nil {
 				return err
 			}
-			if ipnet.Contains(ip) {
+			if valid {
 				return nil
 			}
 		}
 	}
-	return fmt.Errorf("[ERROR] Invalid IP")
+
+	cidrs := strings.Split(cidrList, ",")
+	for _, cidr := range cidrs {
+		valid, err := validateCIDR(ip, cidr)
+		if err != nil {
+			return err
+		}
+		if valid {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Invalid IP")
+}
+
+func validateCIDR(ip net.IP, cidr string) (bool, error) {
+	_, ipnet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return false, err
+	}
+	if ipnet.Contains(ip) {
+		return true, nil
+	}
+	return false, nil
 }

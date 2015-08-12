@@ -13,15 +13,19 @@ import (
 
 // This binary will be run as a command as part of pam authentication flow.
 // This is not a pam module per se, but binary fails if verification of OTP
-// is fails. The pam configuration runs this binary as an externam command via
-// the pam_exec.so module as a 'requisite'.
-
-// Essentially, if this binary fails, then the authentication fails. In order
-// to understand the errors, pam error code constants are used for logging.
+// is fails. The pam configuration runs this binary as an external command via
+// the pam_exec.so module as a 'requisite'. Essentially, if this binary fails,
+// then the authentication fails.
+//
+// After the installation of this binary, verify the installation with -verify
+// -config-file options.
 func main() {
 	err := Run(os.Args[1:])
 	if err != nil {
+		// All the errors are logged using this one statement. All the methods
+		// simply return appropriate error messages.
 		log.Printf("[ERROR]: %s", err)
+
 		// Since this is not a pam module, exiting with appropriate error
 		// code does not make sense. Any non-zero exit value is considered
 		// authentication failure.
@@ -30,7 +34,9 @@ func main() {
 	os.Exit(0)
 }
 
-// Retrieves the key from user and talks to vault server to see if it is valid.
+// Retrieves OTP from user and communicates with Vault server to see if its valid.
+// Also, if -verify option is chosen, a echo request message is sent to Vault instead
+// of OTP. If a proper echo message is responded, the verification is successful.
 func Run(args []string) error {
 	var configFilePath string
 	var verify bool
@@ -49,7 +55,7 @@ func Run(args []string) error {
 	args = flags.Args()
 
 	if configFilePath == "" {
-		return fmt.Errorf("[ERROR] missing config-file param")
+		return fmt.Errorf("missing config-file param")
 	}
 
 	config, err := agent.LoadConfig(configFilePath)
@@ -62,6 +68,10 @@ func Run(args []string) error {
 		return err
 	}
 
+	// Logging SSH mount point since SSH backend mount point at Vault server
+	// can vary and agent has no way of knowing it automatically. Agent reads
+	// the mount point from the configuration file and uses the same to talk
+	// to Vault. In case of errors, this can be used for debugging.
 	log.Printf("[INFO] Using SSH Mount point: %s", config.SSHMountPoint)
 	var otp string
 	if verify {
@@ -80,5 +90,6 @@ func Run(args []string) error {
 		Client:     client,
 		MountPoint: config.SSHMountPoint,
 		OTP:        otp,
+		Config:     config,
 	})
 }
