@@ -16,9 +16,9 @@ SSHD PAM configuration should be modified to redirect client authentication to a
 Usage
 -----
 ### Options
-| Option | Description |
-|--------|-------------|
-| `verify`| To verify that the agent is installed correctly and is able to talk to Vault successfully.
+| Option        | Description |
+|---------------|-------------|
+| `verify`      | To verify that the agent is installed correctly and is able to talk to Vault successfully.
 | `config-file` | The path to the configuration file. The properties of config file are mentioned below.
 
 **[Note]: Refer the below configuration for Linux. It will differ for each platform.**
@@ -27,27 +27,22 @@ Agent Configuration
 
 Name the config file with `.hcl` extension (**`vault.hcl`**)
 
-1) Address of the Vault server
+|Property           |Description|
+|-------------------|-----------|
+|`vault_addr`       | Address of the Vault server.
+|`ssh_mount_point`  | Mount point of SSH backend in Vault server.
+|`ca_cert`          | Path of PEM encoded CA certificate file used to verify Vault server's SSL certificate.
+|`ca_path`          | Path to directory of PEM encoded CA certificate files used to verify Vault serer.
+|`tls_skip_verify`  | Skip TLS certificate verification. Highly not recommended.
+|`allowed_cidr_list`| List of comma seperated CIDR blocks. If the IP used by user to connect to this machine is different than the address of network interface, in other words, if the address is NATed, then agent will not authenticate the IP returned by Vault server. In those cases, the IP returned by Vault will be matched with the CIDR blocks mentioned here. If it matches, the authentication succeeds. Use with caution.
 
-**`VAULT_ADDR="http://127.0.0.1:8200"`**
-
-2) SSH backend mount point in Vault server
-
-**`SSH_MOUNT_POINT="ssh"`**
-
-3) Path to PEM encoded CA Cert file used to verify Vault server SSL certificate
-
-**`CA_CERT=""`**
-
-4) Path to directory of PEM encoded CA Cert files used to verify Vault server
-SSL Certificate.
-
-**`CA_PATH=""`**
-
-5) Skip TLS certificate verification. Highly not recommended.
-(Boolean)
-
-**`TLS_SKIP_VERIFY=false`**
+Sample:
+```shell
+vault_addr="http://127.0.0.1:8200"
+ssh_mount_point="ssh"
+ca_cert="/etc/vault.d/vault.crt"
+tls_skip_verify=false
+```
 
 PAM Configuration
 --------------------------------
