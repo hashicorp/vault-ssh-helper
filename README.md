@@ -1,16 +1,25 @@
-Vault-ssh-agent
+Vault SSH Agent
 ===============
 
-Vault-ssh-agent is a counterpart to Vault's (https://github.com/hashicorp/vault)
+Vault SSH Agent is a counterpart to Vault's (https://github.com/hashicorp/vault)
 SSH backend.
 
-Vault's SSH backend needs vault-ssh-agent to be installed in remote targets to
-enable one-time-passwords (OTP).
+Vault authenticated users create SSH OTPs to connect to remote hosts. During SSH
+connection establishment, the keyboard-interactive password prompt receives the
+OTP entered by the user and provides it to agent. Agent authenticates clients by
+verifying the OTP with Vault server.
 
-Agent authenticates clients by verifying the credentials with Vault server.
+For enabling Vault OTP authentication, agent needs to be installed on all the hosts.
+SSHD configuration should be modified to enable keyboard-interactive authentication.
+SSHD PAM configuration should be modified to redirect client authentication to agent.
 
-**[Note]: Below configuration is only for Linux. It may differ based on the
-target platform.**
+Usage
+-----
+### Options
+| Option | Description |
+|--------|-------------|
+
+**[Note]: Refer the below configuration for Linux. It will differ for each platform.**
 Agent Configuration
 --------------------------------
 
@@ -103,7 +112,7 @@ responses are checked against the password database at the target machine.
 Developing Vault-ssh-agent
 ---------------------------
 
-If you wish to work on Vault itself or any of its built-in systems, you'll
+If you wish to work on agent itself or any of its built-in systems, you'll
 first need [Go](https://www.golang.org) installed on your machine
 (version 1.4+ is required).
 
@@ -138,10 +147,10 @@ $ bin/vault-ssh-agent
 
 If you're developing a specific package, you can run tests for just that
 package by specifying the `TEST` variable. For example below, only
-`api` package tests will be run.
+`agent` package tests will be run.
 
 ```sh
-$ make test TEST=./api
+$ make test TEST=./agent
 ...
 ```
 
