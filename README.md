@@ -16,10 +16,10 @@ SSHD PAM configuration should be modified to redirect client authentication to a
 Usage
 -----
 ### Options
-| Option        | Description |
-|---------------|-------------|
-| `verify`      | To verify that the agent is installed correctly and is able to talk to Vault successfully.
-| `config-file` | The path to the configuration file. The properties of config file are mentioned below.
+|Option       |Description|
+|-------------|-----------|
+|`verify`     |To verify that the agent is installed correctly and is able to talk to Vault successfully.
+|`config-file`|The path to the configuration file. The properties of config file are mentioned below.
 
 **[Note]: Refer the below configuration for Linux. It will differ for each platform.**
 
@@ -30,16 +30,16 @@ Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL
 ### Properties 
 |Property           |Description|
 |-------------------|-----------|
-|`vault_addr`       | Address of the Vault server.
-|`ssh_mount_point`  | Mount point of SSH backend in Vault server.
-|`ca_cert`          | Path of PEM encoded CA certificate file used to verify Vault server's SSL certificate.
-|`ca_path`          | Path to directory of PEM encoded CA certificate files used to verify Vault serer.
-|`tls_skip_verify`  | Skip TLS certificate verification. Highly not recommended.
-|`allowed_cidr_list`| List of comma seperated CIDR blocks. If the IP used by user to connect to this machine is different than the address of network interface, in other words, if the address is NATed, then agent will not authenticate the IP returned by Vault server. In those cases, the IP returned by Vault will be matched with the CIDR blocks mentioned here. If it matches, the authentication succeeds. Use with caution.
+|`vault_addr`       |Address of the Vault server.
+|`ssh_mount_point`  |Mount point of SSH backend in Vault server.
+|`ca_cert`          |Path of PEM encoded CA certificate file used to verify Vault server's SSL certificate.
+|`ca_path`          |Path to directory of PEM encoded CA certificate files used to verify Vault serer.
+|`tls_skip_verify`  |Skip TLS certificate verification. Highly not recommended.
+|`allowed_cidr_list`|List of comma seperated CIDR blocks. If the IP used by user to connect to this machine is different than the address of network interface, in other words, if the address is NATed, then agent will not authenticate the IP returned by Vault server. In those cases, the IP returned by Vault will be matched with the CIDR blocks mentioned here. If it matches, the authentication succeeds. Use with caution.
 
-**`vault_addr` and `ssh_mount_point` are required properties.**
+**NOTE: `vault_addr` and `ssh_mount_point` are required properties.**
 
-Sample `vault.hcl`:
+Sample `agent_config.hcl`:
 ```shell
 vault_addr="http://127.0.0.1:8200"
 ssh_mount_point="ssh"
@@ -67,13 +67,19 @@ vault-ssh-agent. If the agent binary terminates with exit code 0 if authenticati
 is successful. If not it fails with exit code 1.
 
 ```
-auth requisite pam_exec.so expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault/vault.hcl
+auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault.d/agent_config.hcl
 ```
 
-| `requisite` | If the external command fails, the authentication should fail.
-| `expose_authtok` | Binary can access the password entered at the prompt.
-| `log` | Agent's log file.
-| `config-file` | Parameter to `vault-ssh-agent` which is a path to agent's configuration file.
+|Keywor           |Description |
+|-----------------|------------|
+|`auth`           |PAM type that the configuration applies to.
+|`requisite`      |If the external command fails, the authentication should fail.
+|`pam_exec.so`    |PAM module that runs an external command. In this case, an SSH agent.
+|`quiet`          |Supress the messages (error) from being displayed at the prompt.
+|`expose_authtok` |Binary can access the password entered at the prompt.
+|`vault-ssh-agent`|Absolute path to agent's binary.
+|`log`            |Agent's log file.
+|`config-file`    |Parameter to `vault-ssh-agent`, the path to config file.
 
 3) Proper return from authentication flow. There will be a pipe open which listens
 to the response of the authentication. Unfortunately, pam_exec.so is not closing
@@ -82,48 +88,31 @@ this pipe and pam_unix is.
 ```
 auth optional pam_unix.so no_set_pass use_first_pass nodelay
 ```
-
-'optional' indicates that this is not a mandatory step for authentication to succeed.
-
-'no_set_pass' indicates that this module should not be allowed to set or modify passwords.
-
-'use_first_pass' avoids the extra prompt and takes the OTP entered for keyboard-interactive
-as its input and tries to authenticate.
-
-'nodelay' avoids the induced terminal delay in case of authentication failure.
+ 
+|Option          |Description |
+|----------------|------------|
+|`auth`          |PAM type that the configuration applies to.
+|`optional`      |If the module fails, authentication does not fail. This is a hack to properly return from the PAM flow. It closes an open pipe which agent fails to close.
+|`pam_unix.so`   |Linux's standard authentication module.
+|`no_set_pass`   |Module should not be allowed to set or modify passwords.
+|`use_first_pass`|Do not display password prompt again. Use the password from the previous module.
+|`nodelay`       |Avoids the induced delay after entering a wrong password.
 
 SSHD Configuration
 --------------------------------
-
-```
-/etc/ssh/sshd_config
-```
-
-1) Enable challenge response authentication. This is nothing but keyboard-interactive
-authentication.
+Modify `/etc/ssh/sshd_config` file.
 
 ```
 ChallengeResponseAuthentication yes
-```
-
-2) Enabling this option is mandatory. Without this PAM authentication modules will
-not be triggered.
-
-```
 UsePAM yes
-```
-
-3) [Optional] Disable password authentication. Both keyboard-interactive and
-password mechanisms prompts for "Password", which can be confusing. In other
-words, first few "Password" prompts belong to keyboard-interactive mechanism.
-If all the responses are invalid, then the mechanism switches to password
-authentication. Again, there will be "Password" prompts. Only this time, the
-responses are checked against the password database at the target machine.
-
-```
 PasswordAuthentication no
 ```
 
+|Option          |Description |
+|----------------|------------|
+|`ChallengeResponseAuthentication yes`|[Required]Enable challenge response (keyboard-interactive) authentication.
+|`UsePAM yes`                         |[Required]Enable PAM authentication modules.
+|`PasswordAuthentication no`          |[Optional]Disable password authentication.
 
 Developing Vault-ssh-agent
 ---------------------------
