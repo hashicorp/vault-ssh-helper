@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	agentapi "github.com/hashicorp/vault-ssh-agent/api"
 	"github.com/hashicorp/vault/api"
 )
 
@@ -17,31 +16,31 @@ func VerifyOTP(client *api.Client, mountPoint string) error {
 	// by supplying 'expose_authtok' option to pam module config.
 	bytes, err := ioutil.ReadAll(os.Stdin)
 	if err != nil {
-		return fmt.Errorf("Error reading OTP from prompt: %s\n", err)
+		return err
 	}
 
 	otp := strings.TrimSuffix(string(bytes), string('\x00'))
 
 	// Checking if an entry with supplied OTP exists in vault server.
-	response, err := agentapi.SSHAgent(client, mountPoint).Verify(otp)
+	response, err := SSHAgent(client, mountPoint).Verify(otp)
 	if err != nil {
-		return fmt.Errorf("OTP verification failed: %s\n", err)
+		return err
 	}
 
 	// PAM_USER represents the username for which authentication is being
 	// requested. If the response from vault server mentions the username
 	// associated with the OTP. It has to be a match.
 	if response.Username != os.Getenv("PAM_USER") {
-		return fmt.Errorf("Username name mismatched. VaultEntry:%s, AgentUsername:%s\n", response.Username, os.Getenv("PAM_USER"))
+		return fmt.Errorf("[ERROR] Username name mismatch")
 	}
 
 	// The IP address to which the OTP is associated should be one among
 	// the network interface addresses of the machine in which agent is
 	// running.
 	if err := validateIP(response.IP); err != nil {
-		return fmt.Errorf("Error validating IP: %s\n", err)
+		return err
 	}
-	log.Printf("%s@%s Authenticated!\n", response.Username, response.IP)
+	log.Printf("[INFO] %s@%s Authenticated!", response.Username, response.IP)
 	return nil
 }
 
@@ -56,7 +55,7 @@ func validateIP(ipStr string) error {
 	for _, iface := range interfaces {
 		addrs, err := iface.Addrs()
 		if err != nil {
-			return fmt.Errorf("Error finding interface addresses")
+			return err
 		}
 		for _, addr := range addrs {
 			_, ipnet, err := net.ParseCIDR(addr.String())
@@ -68,5 +67,5 @@ func validateIP(ipStr string) error {
 			}
 		}
 	}
-	return fmt.Errorf("OTP does not belong to this IP")
+	return fmt.Errorf("[ERROR] Invalid IP")
 }

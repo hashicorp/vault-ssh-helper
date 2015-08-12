@@ -1,4 +1,4 @@
-package client
+package agent
 
 import (
 	"bytes"
@@ -7,8 +7,6 @@ import (
 	"net"
 	"net/http"
 	"testing"
-
-	"github.com/hashicorp/vault-ssh-agent/config"
 )
 
 func TestSSHAgent_NewClient(t *testing.T) {

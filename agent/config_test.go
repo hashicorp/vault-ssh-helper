@@ -1,4 +1,4 @@
-package config
+package agent
 
 import "testing"
 

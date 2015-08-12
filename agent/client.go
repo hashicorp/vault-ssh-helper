@@ -1,10 +1,9 @@
-package client
+package agent
 
 import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -12,14 +11,13 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/hashicorp/vault-ssh-agent/config"
 	"github.com/hashicorp/vault/api"
 )
 
 // Returns a new client for the given configuration. If the configuration
 // supplies Vault SSL certificates, then the client will have tls configured
 // in its transport.
-func NewClient(config *config.VaultConfig) (*api.Client, error) {
+func NewClient(config *VaultConfig) (*api.Client, error) {
 	// Creating a default client configuration for communicating with vault server.
 	clientConfig := api.DefaultConfig()
 
@@ -35,7 +33,7 @@ func NewClient(config *config.VaultConfig) (*api.Client, error) {
 			certPool, err = loadCAPath(config.CAPath)
 		}
 		if err != nil {
-			return nil, fmt.Errorf("Error setting up CA path: %s", err)
+			return nil, err
 		}
 
 		tlsConfig := &tls.Config{
@@ -70,7 +68,7 @@ func NewClient(config *config.VaultConfig) (*api.Client, error) {
 func loadCACert(path string) (*x509.CertPool, error) {
 	certs, err := loadCertFromPEM(path)
 	if err != nil {
-		return nil, fmt.Errorf("Error loading %s: %s", path, err)
+		return nil, err
 	}
 
 	result := x509.NewCertPool()
@@ -96,7 +94,7 @@ func loadCAPath(path string) (*x509.CertPool, error) {
 
 		certs, err := loadCertFromPEM(path)
 		if err != nil {
-			return fmt.Errorf("Error loading %s: %s", path, err)
+			return err
 		}
 
 		for _, cert := range certs {

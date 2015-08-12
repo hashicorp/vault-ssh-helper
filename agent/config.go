@@ -1,7 +1,6 @@
-package config
+package agent
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 
@@ -26,14 +25,14 @@ func LoadConfig(path string) (*VaultConfig, error) {
 	if !os.IsNotExist(err) {
 		obj, err := hcl.Parse(string(contents))
 		if err != nil {
-			return nil, fmt.Errorf("Error parsing Vault address")
+			return nil, err
 		}
 
 		if err := hcl.DecodeObject(&config, obj); err != nil {
-			return nil, fmt.Errorf("Error decoding Vault address")
+			return nil, err
 		}
 	} else {
-		return nil, fmt.Errorf("Error finding vault agent config file")
+		return nil, err
 	}
 	return &config, nil
 }

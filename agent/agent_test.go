@@ -1,4 +1,4 @@
-package api
+package agent
 
 import (
 	"encoding/json"
@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/hashicorp/vault-ssh-agent/client"
-	"github.com/hashicorp/vault-ssh-agent/config"
 	"github.com/hashicorp/vault/api"
 )
 
