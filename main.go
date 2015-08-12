@@ -64,7 +64,7 @@ func Run(args []string) error {
 		return err
 	}
 
-	client, err := agent.NewClient(config)
+	client, err := config.NewClient()
 	if err != nil {
 		return err
 	}
