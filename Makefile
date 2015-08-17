@@ -4,7 +4,11 @@ EXTERNAL_TOOLS=\
 	github.com/mitchellh/gox \
 	golang.org/x/tools/cmd/vet
 
-default: test
+default: test build
+
+build: generate
+	@mkdir -p bin/
+	go build -o bin/vault-ssh-agent
 
 # bin generates the releaseable binaries for Vault
 bin: generate
@@ -35,7 +39,7 @@ testrace: generate
 # any common errors.
 vet:
 	@go list -f '{{.Dir}}' ./... \
-		| grep -v '.*github.com/hashicorp/vault$$' \
+		| grep -v '.*github.com/hashicorp/vault-ssh-agent$$' \
 		| xargs go tool vet ; if [ $$? -eq 1 ]; then \
 			echo ""; \
 			echo "Vet found suspicious constructs. Please check the reported constructs"; \
@@ -54,8 +58,8 @@ bootstrap:
     go get $$tool; \
 	done
 
-install:
-	@sudo cp $(GOPATH)/bin/vault-ssh-agent /usr/local/bin
+install: build
+	@sudo cp bin/vault-ssh-agent /usr/local/bin
 
 
-.PHONY: bin default generate test dev vet bootstrap testacc install
+.PHONY: bin build default generate test dev vet bootstrap testacc install

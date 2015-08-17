@@ -1,13 +1,32 @@
 Vault SSH Agent
 ===============
 
-Vault SSH Agent is a counterpart to Vault's (https://github.com/hashicorp/vault) SSH backend.
+Vault SSH Agent is a counterpart to Vault's (https://github.com/hashicorp/vault)
+SSH backend. It enables creation of One-Time-Passwords (OTP) by Vault servers.
+OTPs will be used as client authentication credentials while establishing SSH
+connections with remote hosts.
 
-Vault authenticated users create SSH OTPs to connect to remote hosts. During SSH connection establishment, the keyboard-interactive password prompt receives the OTP entered by the user and provides it to agent. Agent authenticates clients by verifying the OTP, IP and username with Vault server.  
+All the remote hosts that belong to SSH backend's role of type OTP, will need this
+agent to be installed, get its SSH configuration changed to enable keyboard-interactive
+authentication and redirect its client authentication responsibility to Vault SSH Agent.
 
-For enabling Vault OTP authentication, agent needs to be installed on all the hosts. SSHD configuration should be modified to enable keyboard-interactive authentication. SSHD Pluggable Authentication Module (PAM) configuration should be modified to redirect client authentication to agent.  
+Vault authenticated users contact Vault server and get an OTP issued for any specific
+username and IP address. While establishing an SSH connection, agent reads the OTP
+from the password prompt and sends it to Vault server for verification. Only if Vault
+server verifies the OTP, client is authenticated and the SSH connection is allowed.
 
-Usage
+This agent is not a PAM module, but it does the job of one. Agent's binary is run as
+an external command using `pam_exec.so` with access to password. Graceful execution
+and exit of this command is a 'requisite' for authentication to be successful. If
+the OTP is not validated, the binary exits with a non-zero status and hence the
+desired effect is achieved. 
+
+PAM modules are supposed to be shared object files and Go (currently) does not
+support creation of `.so` files. It was a choice between writing a PAM module in
+C and maintain it for all platforms vs using this workaround to get the job done,
+but with the convenience of using Go.
+
+## Usage
 -----
 `vault-ssh-agent [options]`
 
@@ -17,11 +36,58 @@ Usage
 |`verify`     |To verify that the agent is installed correctly and is able to talk to Vault successfully.
 |`config-file`|The path to the configuration file. The properties of config file are mentioned below.
 
-**[Note]: Below configuration is applicable for Linux. It differs for each platform.**
+## Installation
+-----
+
+Install `Go` in your machine (1.4+) and set `GOPATH` accordingly. Clone this repository
+in $GOPATH/src/github.com/hashicorp/vault-ssh-agent. Install all the dependant binaries
+like godep, gox, vet etc by bootstrapping the environment.
+
+```shell
+$ make bootstrap
+```
+
+Build and install Vault SSH Agent.
+
+```shell
+$ make
+$ make install
+```
+
+Follow the instructions below and modify SSH server, PAM configurations and configure
+the agent. Check if the agent is installed and configured correctly and is able to
+communicate with Vault server properly.
+
+```shell
+$ vault-ssh-agent -verify -config-file=<path-to-config-file>
+Using SSH Mount point: ssh
+Agent verification successful!
+```
+
+If you intend to contribute to this project, compile a development version of agent,
+using `make dev`. This will put the binary in `bin` and `$GOPATH/bin` folders.
+
+```shell
+$ make dev
+```
+
+If you're developing a specific package, you can run tests for just that package by
+specifying the `TEST` variable. For example below, only `agent` package tests will be run.
+
+```sh
+$ make test TEST=./agent
+...
+```
+
+If you intend to cross compile the binary, run `make bin`.
+
+**[Note]: Below configuration is only applicable for Linux and it differs with each platform.**
 
 Agent Configuration
 -------------------
-Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL]. By proxy, this means that Agent's configuration is JSON-compatible. For more information, please see the [HCL Specification][HCL].
+Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL].
+By proxy, this means that Agent's configuration is JSON-compatible. For more
+information, please see the [HCL Specification][HCL].
 
 ### Properties 
 |Property           |Description|
@@ -60,13 +126,14 @@ Next, configure the agent.
 |`auth`           |PAM type that the configuration applies to.
 |`requisite`      |If the external command fails, the authentication should fail.
 |`pam_exec.so`    |PAM module that runs an external command. In this case, an SSH agent.
-|`quiet`          |Supress the messages (error) from being displayed at the prompt.
-|`expose_authtok` |Binary can access the password entered at the prompt.
+|`quiet`          |Supress the exit status of agent from being displayed.
+|`expose_authtok` |Binary can read the password from stdin.
 |`vault-ssh-agent`|Absolute path to agent's binary.
-|`log`            |Agent's log file.
+|`log`            |Path to agent's log file.
 |`config-file`    |Parameter to `vault-ssh-agent`, the path to config file.
 
-Lastly, return if agent authenticates the client successfully. This is a hack to gracefully return by closing an open pipe.
+Lastly, return if agent authenticates the client successfully. This is a workaround
+to gracefully return by closing an open pipe.
 
 |Option          |Description |
 |----------------|------------|
@@ -92,51 +159,5 @@ PasswordAuthentication no
 |`ChallengeResponseAuthentication yes`|[Required]Enable challenge response (keyboard-interactive) authentication.
 |`UsePAM yes`                         |[Required]Enable PAM authentication modules.
 |`PasswordAuthentication no`          |Disable password authentication.
-
-
-Developing Vault-ssh-agent
----------------------------
-
-If you wish to work on agent itself or any of its built-in systems, you'll
-first need [Go](https://www.golang.org) installed on your machine
-(version 1.4+ is required).
-
-For local dev first make sure Go is properly installed, including setting up a
-[GOPATH](https://golang.org/doc/code.html#GOPATH). After setting up Go, you can
-download the required build tools such as vet, gox, godep etc by bootstrapping
-your environment.
-
-```sh
-$ make bootstrap
-...
-```
-
-Next, clone this repository into `$GOPATH/src/github.com/hashicorp/vault-ssh-agent`.
-Then type `make`. This will run the tests. If this exits with exit status 0,
-then everything is working 
-
-```sh
-$ make
-...
-```
-
-To compile a development version of Vault-ssh-agent, run `make dev`. This will put
-the vault-ssh-agent binary in `bin` and `$GOPATH/bin` folders:
-
-```sh
-$ make dev
-...
-$ bin/vault-ssh-agent
-...
-```
-
-If you're developing a specific package, you can run tests for just that
-package by specifying the `TEST` variable. For example below, only
-`agent` package tests will be run.
-
-```sh
-$ make test TEST=./agent
-...
-```
 
 [HCL]: https://github.com/hashicorp/hcl "HashiCorp Configuration Language (HCL)"

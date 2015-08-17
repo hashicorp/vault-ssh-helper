@@ -45,7 +45,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// If OTP was an echo request, check the response for echo response and return
 	if req.OTP == api.VerifyEchoRequest {
 		if resp.Message == api.VerifyEchoResponse {
-			log.Printf("[INFO] Agent verification successful")
+			log.Printf("[INFO] Agent verification successful!")
 			return nil
 		} else {
 			return fmt.Errorf("Invalid echo response")
