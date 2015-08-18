@@ -12,22 +12,22 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
-// This binary will be run as a command as part of pam authentication flow.
-// This is not a pam module per se, but binary fails if verification of OTP
-// is fails. The pam configuration runs this binary as an external command via
+// This binary will be run as a command with the goal of client authentication.
+// This is not a PAM module per se, but binary fails if verification of OTP
+// is fails. The PAM configuration runs this binary as an external command via
 // the pam_exec.so module as a 'requisite'. Essentially, if this binary fails,
 // then the authentication fails.
 //
-// After the installation of this binary, verify the installation with -verify
-// -config-file options.
+// After the installation and configuration of this agent, verify the installation
+// with -verify option.
 func main() {
 	err := Run(os.Args[1:])
 	if err != nil {
 		// All the errors are logged using this one statement. All the methods
-		// simply return appropriate error messages.
+		// simply return appropriate error message.
 		log.Printf("[ERROR]: %s", err)
 
-		// Since this is not a pam module, exiting with appropriate error
+		// Since this is not a PAM module, exiting with appropriate error
 		// code does not make sense. Any non-zero exit value is considered
 		// authentication failure.
 		os.Exit(1)
@@ -35,9 +35,9 @@ func main() {
 	os.Exit(0)
 }
 
-// Retrieves OTP from user and communicates with Vault server to see if its valid.
-// Also, if -verify option is chosen, a echo request message is sent to Vault instead
-// of OTP. If a proper echo message is responded, the verification is successful.
+// Retrieves OTP from user and validates it with Vault server. Also, if -verify
+// option is chosen, a echo request message is sent to Vault instead of OTP. If
+// a proper echo message is responded, the verification will be successful.
 func Run(args []string) error {
 	var configFilePath string
 	var verify bool
@@ -46,7 +46,7 @@ func Run(args []string) error {
 	flags.BoolVar(&verify, "verify", false, "")
 
 	flags.Usage = func() {
-		log.Println("Usage: vault-ssh-agent -config-file=<config-file>")
+		log.Println("Usage: vault-ssh-agent -config-file=<config-file> [-verify]")
 	}
 
 	if err := flags.Parse(args); err != nil {
@@ -56,14 +56,16 @@ func Run(args []string) error {
 	args = flags.Args()
 
 	if configFilePath == "" {
-		return fmt.Errorf("missing config-file param")
+		return fmt.Errorf("missing config-file")
 	}
 
+	// Load the configuration for this agent
 	config, err := api.LoadSSHAgentConfig(configFilePath)
 	if err != nil {
 		return err
 	}
 
+	// Get an http client to interact with Vault server based on the configuration
 	client, err := config.NewClient()
 	if err != nil {
 		return err
@@ -73,6 +75,9 @@ func Run(args []string) error {
 	// can vary and agent has no way of knowing it automatically. Agent reads
 	// the mount point from the configuration file and uses the same to talk
 	// to Vault. In case of errors, this can be used for debugging.
+	//
+	// If mount point is not mentioned in the config file, default mount point
+	// of the SSH backend will be used.
 	log.Printf("[INFO] Using SSH Mount point: %s", config.SSHMountPoint)
 	var otp string
 	if verify {
@@ -84,9 +89,13 @@ func Run(args []string) error {
 		if err != nil {
 			return err
 		}
+
+		// Removing the terminator
 		otp = strings.TrimSuffix(string(otpBytes), string('\x00'))
 	}
 
+	// If OTP is echo request, this will be a verify request. Otherwise, this
+	// will be a OTP validation request.
 	return agent.VerifyOTP(&agent.SSHVerifyRequest{
 		Client:     client,
 		MountPoint: config.SSHMountPoint,

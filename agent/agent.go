@@ -18,9 +18,9 @@ type SSHVerifyRequest struct {
 	// Mount point of SSH backend at Vault
 	MountPoint string
 
-	// This can be either an echo message (see #VerifyEchoRequest), which if set
-	// Vault will respond with echo response (see #VerifyEchoResponse). OR, it
-	// should be the one-time-password entered by the user at the prompt.
+	// This can be either an echo request message, which if set Vault will
+	// respond with echo response message. OR, it can be the one-time-password
+	// entered by the user at the prompt.
 	OTP string
 
 	// Structure containing configuration parameters of SSH agent
@@ -35,14 +35,21 @@ type SSHVerifyRequest struct {
 //
 // IP address returned by vault should match the addresses of network interfaces or
 // it should belong to the list of allowed CIDR blocks in the config file.
+//
+// This method is also used to verify if the communication between agent and Vault
+// server can be established with the given configuration data. If OTP in the request
+// matches the echo request message, then the echo response message is expected in
+// the response, which indicates successful connection establishment.
 func VerifyOTP(req *SSHVerifyRequest) error {
-	// Checking if an entry with supplied OTP exists in vault server.
+	// Validating the OTP from Vault server. The response from server can have
+	// either the response message set OR username and IP set.
 	resp, err := req.Client.SSHAgentWithMountPoint(req.MountPoint).Verify(req.OTP)
 	if err != nil {
 		return err
 	}
 
-	// If OTP was an echo request, check the response for echo response and return
+	// If OTP sent was an echo request, look for echo response message in the
+	// response and return
 	if req.OTP == api.VerifyEchoRequest {
 		if resp.Message == api.VerifyEchoResponse {
 			log.Printf("[INFO] Agent verification successful!")
@@ -56,16 +63,19 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// requested. If the response from vault server mentions the username
 	// associated with the OTP. It has to be a match.
 	if resp.Username != os.Getenv("PAM_USER") {
-		return fmt.Errorf("Username name mismatch")
+		return fmt.Errorf("Username mismatch")
 	}
 
 	// The IP address to which the OTP is associated should be one among
 	// the network interface addresses of the machine in which agent is
-	// running.
+	// running. OR it should be present in allowed_cidr_list.
 	if err := validateIP(resp.IP, req.Config.AllowedCidrList); err != nil {
 		return err
 	}
 
+	// Reaching here means that there were no problems. Returning nil will
+	// gracefully terminate the binary and client will be authenticated to
+	// establish the session.
 	log.Printf("[INFO] %s@%s Authenticated!", resp.Username, resp.IP)
 	return nil
 }
@@ -74,8 +84,8 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 // the network interfaces of the machine in which agent is running.
 //
 // If none of the interface addresses match the given IP, then it is search in
-// the comma seperated list of CIDR blocks passed in as second parameter. This
-// list is supplied as part of agent's configuration.
+// the comma seperated list of CIDR blocks. This list is supplied as part of
+// agent's configuration.
 func validateIP(ipStr string, cidrList string) error {
 	ip := net.ParseIP(ipStr)
 
@@ -90,11 +100,11 @@ func validateIP(ipStr string, cidrList string) error {
 			return err
 		}
 		for _, addr := range addrs {
-			valid, err := validateCIDR(ip, addr.String())
+			belongs, err := belongsToCIDR(ip, addr.String())
 			if err != nil {
 				return err
 			}
-			if valid {
+			if belongs {
 				return nil
 			}
 		}
@@ -104,11 +114,11 @@ func validateIP(ipStr string, cidrList string) error {
 	// Now, try to find a match with the given CIDR blocks.
 	cidrs := strings.Split(cidrList, ",")
 	for _, cidr := range cidrs {
-		valid, err := validateCIDR(ip, cidr)
+		belongs, err := belongsToCIDR(ip, cidr)
 		if err != nil {
 			return err
 		}
-		if valid {
+		if belongs {
 			return nil
 		}
 	}
@@ -117,7 +127,7 @@ func validateIP(ipStr string, cidrList string) error {
 }
 
 // Checks if the given CIDR block encompasses the given IP address.
-func validateCIDR(ip net.IP, cidr string) (bool, error) {
+func belongsToCIDR(ip net.IP, cidr string) (bool, error) {
 	_, ipnet, err := net.ParseCIDR(cidr)
 	if err != nil {
 		return false, err

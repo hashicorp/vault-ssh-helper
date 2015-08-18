@@ -160,4 +160,10 @@ PasswordAuthentication no
 |`UsePAM yes`                         |[Required]Enable PAM authentication modules.
 |`PasswordAuthentication no`          |Disable password authentication.
 
+-----------------------
+
+Vault SSH Backend's pull request: https://github.com/hashicorp/vault/pull/385
+
+
 [HCL]: https://github.com/hashicorp/hcl "HashiCorp Configuration Language (HCL)"
+
