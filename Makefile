@@ -4,7 +4,7 @@ EXTERNAL_TOOLS=\
 	github.com/mitchellh/gox \
 	golang.org/x/tools/cmd/vet
 
-default: test build
+default: build
 
 build: generate
 	@mkdir -p bin/

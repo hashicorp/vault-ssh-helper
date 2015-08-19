@@ -46,7 +46,8 @@ func Run(args []string) error {
 	flags.BoolVar(&verify, "verify", false, "")
 
 	flags.Usage = func() {
-		log.Println("Usage: vault-ssh-agent -config-file=<config-file> [-verify]")
+		fmt.Printf("%s\n", Help())
+		os.Exit(0)
 	}
 
 	if err := flags.Parse(args); err != nil {
@@ -102,4 +103,16 @@ func Run(args []string) error {
 		OTP:        otp,
 		Config:     config,
 	})
+}
+
+func Help() string {
+	helpText := `
+Usage: vault-ssh-agent -config-file=<config-file> [-verify]
+	
+	Vault SSH Agent takes the One-Time-Password (OTP) from the client and
+	validates it with Vault server. This binary should be used as an external
+	command for authenticating clients during for keyboard-interactive auth
+	of SSH server.
+`
+	return strings.TrimSpace(helpText)
 }

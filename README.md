@@ -99,11 +99,11 @@ information, please see the [HCL Specification][HCL].
 |`allowed_cidr_list`|List of comma seperated CIDR blocks. If the IP used by user to connect to host is different than the addresses of host's network interfaces, in other words, if the address is NATed, then agent cannot authenticate the IP. In these cases, the IP returned by Vault will be matched with the CIDR blocks in this list. If it matches, the authentication succeeds. (Use with caution)
 |`tls_skip_verify`  |Skip TLS certificate verification. Highly not recommended.
 
-Sample `agent_config.hcl`:
+Sample `config.hcl`:
 ```hcl
 vault_addr="http://127.0.0.1:8200"
 ssh_mount_point="ssh"
-ca_cert="/etc/vault.d/vault.crt"
+ca_cert="/etc/vault-ssh-agent.d/vault.crt"
 tls_skip_verify=false
 ```
 
@@ -113,7 +113,7 @@ Modify `/etc/pam.d/sshd` file.
 
 ```hcl
 #@include common-auth
-auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault.d/agent_config.hcl
+auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-agent -config-file=/etc/vault-ssh-agent.d/config.hcl
 auth optional pam_unix.so no_set_pass use_first_pass nodelay
 ```
 
