@@ -8,7 +8,7 @@ default: build
 
 build: generate
 	@mkdir -p bin/
-	go build -o bin/vault-ssh-agent
+	go build -o bin/vault-ssh-helper
 
 # bin generates the releaseable binaries for Vault
 bin: generate
@@ -39,7 +39,7 @@ testrace: generate
 # any common errors.
 vet:
 	@go list -f '{{.Dir}}' ./... \
-		| grep -v '.*github.com/hashicorp/vault-ssh-agent$$' \
+		| grep -v '.*github.com/hashicorp/vault-ssh-helper$$' \
 		| xargs go tool vet ; if [ $$? -eq 1 ]; then \
 			echo ""; \
 			echo "Vet found suspicious constructs. Please check the reported constructs"; \
@@ -59,7 +59,7 @@ bootstrap:
 	done
 
 install: build
-	@sudo cp bin/vault-ssh-agent /usr/local/bin
+	@sudo cp bin/vault-ssh-helper /usr/local/bin
 
 
 .PHONY: bin build default generate test dev vet bootstrap testacc install

@@ -42,8 +42,8 @@ gox \
     -os="!freebsd" \
     -os="!openbsd" \
     -arch="${XC_ARCH}" \
-    -ldflags "-X github.com/hashicorp/vault-ssh-agent/cli.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
-    -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-agent" \
+    -ldflags "-X github.com/hashicorp/vault-ssh-helper/cli.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
+    -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-helper" \
     .
 
 # Move all the compiled things to the $GOPATH/bin
