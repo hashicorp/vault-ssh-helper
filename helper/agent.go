@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
-// Structure representing the agent's verification request.
+// Structure representing the helper's verification request.
 type SSHVerifyRequest struct {
 	// Http client to communicate with Vault
 	Client *api.Client
@@ -23,7 +23,7 @@ type SSHVerifyRequest struct {
 	// entered by the user at the prompt.
 	OTP string
 
-	// Structure containing configuration parameters of SSH agent
+	// Structure containing configuration parameters of SSH helper
 	Config *api.SSHAgentConfig
 }
 
@@ -36,7 +36,7 @@ type SSHVerifyRequest struct {
 // IP address returned by vault should match the addresses of network interfaces or
 // it should belong to the list of allowed CIDR blocks in the config file.
 //
-// This method is also used to verify if the communication between agent and Vault
+// This method is also used to verify if the communication between helper and Vault
 // server can be established with the given configuration data. If OTP in the request
 // matches the echo request message, then the echo response message is expected in
 // the response, which indicates successful connection establishment.
@@ -67,7 +67,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	}
 
 	// The IP address to which the OTP is associated should be one among
-	// the network interface addresses of the machine in which agent is
+	// the network interface addresses of the machine in which helper is
 	// running. OR it should be present in allowed_cidr_list.
 	if err := validateIP(resp.IP, req.Config.AllowedCidrList); err != nil {
 		return err
@@ -81,11 +81,11 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 }
 
 // Finds out if given IP address belongs to the IP addresses associated with
-// the network interfaces of the machine in which agent is running.
+// the network interfaces of the machine in which helper is running.
 //
 // If none of the interface addresses match the given IP, then it is search in
 // the comma seperated list of CIDR blocks. This list is supplied as part of
-// agent's configuration.
+// helper's configuration.
 func validateIP(ipStr string, cidrList string) error {
 	ip := net.ParseIP(ipStr)
 

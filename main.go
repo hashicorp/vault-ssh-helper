@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/hashicorp/vault-ssh-agent/agent"
+	"github.com/hashicorp/vault-ssh-helper/helper"
 	"github.com/hashicorp/vault/api"
 )
 
@@ -18,7 +18,7 @@ import (
 // the pam_exec.so module as a 'requisite'. Essentially, if this binary fails,
 // then the authentication fails.
 //
-// After the installation and configuration of this agent, verify the installation
+// After the installation and configuration of this helper, verify the installation
 // with -verify option.
 func main() {
 	err := Run(os.Args[1:])
@@ -41,7 +41,7 @@ func main() {
 func Run(args []string) error {
 	var configFilePath string
 	var verify bool
-	flags := flag.NewFlagSet("ssh-agent", flag.ContinueOnError)
+	flags := flag.NewFlagSet("ssh-helper", flag.ContinueOnError)
 	flags.StringVar(&configFilePath, "config-file", "", "")
 	flags.BoolVar(&verify, "verify", false, "")
 
@@ -60,7 +60,7 @@ func Run(args []string) error {
 		return fmt.Errorf("missing config-file")
 	}
 
-	// Load the configuration for this agent
+	// Load the configuration for this helper
 	config, err := api.LoadSSHAgentConfig(configFilePath)
 	if err != nil {
 		return err
@@ -73,7 +73,7 @@ func Run(args []string) error {
 	}
 
 	// Logging SSH mount point since SSH backend mount point at Vault server
-	// can vary and agent has no way of knowing it automatically. Agent reads
+	// can vary and helper has no way of knowing it automatically. Agent reads
 	// the mount point from the configuration file and uses the same to talk
 	// to Vault. In case of errors, this can be used for debugging.
 	//
@@ -97,7 +97,7 @@ func Run(args []string) error {
 
 	// If OTP is echo request, this will be a verify request. Otherwise, this
 	// will be a OTP validation request.
-	return agent.VerifyOTP(&agent.SSHVerifyRequest{
+	return helper.VerifyOTP(&helper.SSHVerifyRequest{
 		Client:     client,
 		MountPoint: config.SSHMountPoint,
 		OTP:        otp,
@@ -107,7 +107,7 @@ func Run(args []string) error {
 
 func Help() string {
 	helpText := `
-Usage: vault-ssh-agent -config-file=<config-file> [-verify]
+Usage: vault-ssh-helper -config-file=<config-file> [-verify]
 	
 	Vault SSH Agent takes the One-Time-Password (OTP) from the client and
 	validates it with Vault server. This binary should be used as an external
