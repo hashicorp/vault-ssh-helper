@@ -8,6 +8,9 @@ SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
 DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
 
+# Get the name of the binary
+NAME="$(basename "$DIR")"
+
 # Change into that directory
 cd "$DIR"
 
@@ -17,7 +20,7 @@ GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 # Determine the arch/os combos we're building for
 XC_ARCH=${XC_ARCH:-"386 amd64 arm"}
-XC_OS=${XC_OS:-linux darwin windows freebsd openbsd}
+XC_OS=${XC_OS:-"darwin freebsd linux netbsd openbsd solaris windows"}
 
 # Install dependencies
 echo "==> Getting dependencies..."
@@ -30,7 +33,7 @@ rm -rf pkg/*
 mkdir -p bin/
 
 # If its dev mode, only build for ourself
-if [ "${TF_DEV}x" != "x" ]; then
+if [ "${DEV}x" != "x" ]; then
     XC_OS=$(go env GOOS)
     XC_ARCH=$(go env GOARCH)
 fi
@@ -39,11 +42,9 @@ fi
 echo "==> Building..."
 gox \
     -os="${XC_OS}" \
-    -os="!freebsd" \
-    -os="!openbsd" \
     -arch="${XC_ARCH}" \
-    -ldflags "-X github.com/hashicorp/vault-ssh-helper/cli.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
-    -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-helper" \
+    -ldflags "-X main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
+    -output "pkg/{{.OS}}_{{.Arch}}/${NAME}" \
     .
 
 # Move all the compiled things to the $GOPATH/bin
@@ -64,7 +65,7 @@ for F in $(find ${DEV_PLATFORM} -mindepth 1 -maxdepth 1 -type f); do
     cp ${F} ${MAIN_GOPATH}/bin/
 done
 
-if [ "${TF_DEV}x" = "x" ]; then
+if [ "${DEV}x" = "x" ]; then
     # Zip and copy to the dist dir
     echo "==> Packaging..."
     for PLATFORM in $(find ./pkg -mindepth 1 -maxdepth 1 -type d); do
