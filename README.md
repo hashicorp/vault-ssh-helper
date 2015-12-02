@@ -19,7 +19,7 @@ This helper is not a PAM module, but it does the job of one. Agent's binary is r
 an external command using `pam_exec.so` with access to password. Graceful execution
 and exit of this command is a 'requisite' for authentication to be successful. If
 the OTP is not validated, the binary exits with a non-zero status and hence the
-desired effect is achieved. 
+desired effect is achieved.
 
 PAM modules are supposed to be shared object files and Go (currently) does not
 support creation of `.so` files. It was a choice between writing a PAM module in
@@ -44,7 +44,7 @@ in $GOPATH/src/github.com/hashicorp/vault-ssh-helper. Install all the dependant 
 like godep, gox, vet etc by bootstrapping the environment.
 
 ```shell
-$ make bootstrap
+$ make updatedeps
 ```
 
 Build and install Vault SSH Agent.
@@ -89,7 +89,7 @@ Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL
 By proxy, this means that Agent's configuration is JSON-compatible. For more
 information, please see the [HCL Specification][HCL].
 
-### Properties 
+### Properties
 |Property           |Description|
 |-------------------|-----------|
 |`vault_addr`       |[Required]Address of the Vault server.
@@ -109,7 +109,7 @@ tls_skip_verify=false
 
 PAM Configuration
 --------------------------------
-Modify `/etc/pam.d/sshd` file. 
+Modify `/etc/pam.d/sshd` file.
 
 ```hcl
 #@include common-auth

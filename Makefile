@@ -1,7 +1,7 @@
 TEST?=./...
 NAME?=$(shell basename "$(CURDIR)")
 
-default: build
+default: dev
 
 # bin generates the releaseable binaries for Vault
 bin: generate
@@ -54,7 +54,7 @@ updatedeps:
 		| grep -v github.com/hashicorp/$(NAME) \
 		| xargs go get -f -u -v
 
-install: build
+install: dev
 	@sudo cp bin/vault-ssh-helper /usr/local/bin
 
-.PHONY: bin build default generate test dev vet updatedeps testacc install
+.PHONY: bin dev default generate test vet updatedeps testacc install
