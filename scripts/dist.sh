@@ -8,13 +8,13 @@ if [ -z $VERSION ]; then
   exit 1
 fi
 
-# Get the name of the binary
-NAME="$(basename "$DIR")"
-
 # Get the parent directory of where this script is.
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
 DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
+
+# Get the name of the binary
+NAME="$(basename "$DIR")"
 
 # Change into that dir because we expect that
 cd $DIR

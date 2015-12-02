@@ -1,5 +1,6 @@
 TEST?=./...
 NAME?=$(shell basename "$(CURDIR)")
+VERSION = $(shell awk -F\" '/^const Version/ { print $$2; exit }' version.go)
 
 default: dev
 
@@ -11,6 +12,10 @@ bin: generate
 # into ./bin/ as well as $GOPATH/bin
 dev: generate
 	@DEV=1 sh -c "'$(CURDIR)/scripts/build.sh'"
+
+# dist creates the binaries for distibution
+dist: bin
+	@sh -c "'$(CURDIR)/scripts/dist.sh' $(VERSION)"
 
 # test runs the unit tests and vets the code
 test: generate
@@ -57,4 +62,4 @@ updatedeps:
 install: dev
 	@sudo cp bin/vault-ssh-helper /usr/local/bin
 
-.PHONY: bin dev default generate test vet updatedeps testacc install
+.PHONY: default bin dev dist generate test vet updatedeps testacc install
