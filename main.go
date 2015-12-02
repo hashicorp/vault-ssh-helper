@@ -39,6 +39,13 @@ func main() {
 // option is chosen, a echo request message is sent to Vault instead of OTP. If
 // a proper echo message is responded, the verification will be successful.
 func Run(args []string) error {
+	for _, arg := range args {
+		if arg == "-v" || arg == "-version" || arg == "--version" {
+			fmt.Println(formattedVersion())
+			return nil
+		}
+	}
+
 	var configFilePath string
 	var verify bool
 	flags := flag.NewFlagSet("ssh-helper", flag.ContinueOnError)
@@ -107,12 +114,18 @@ func Run(args []string) error {
 
 func Help() string {
 	helpText := `
-Usage: vault-ssh-helper -config-file=<config-file> [-verify]
-	
-	Vault SSH Agent takes the One-Time-Password (OTP) from the client and
-	validates it with Vault server. This binary should be used as an external
-	command for authenticating clients during for keyboard-interactive auth
-	of SSH server.
+Usage: vault-ssh-helper [options]
+
+  Vault SSH Agent takes the One-Time-Password (OTP) from the client and
+  validates it with Vault server. This binary should be used as an external
+  command for authenticating clients during for keyboard-interactive auth
+  of SSH server.
+
+Options:
+
+  -config-file=<path>         The path on disk to a configuration file.
+  -verify=<value>             Verify the given one time password.
+  -version                    Display version.
 `
 	return strings.TrimSpace(helpText)
 }
