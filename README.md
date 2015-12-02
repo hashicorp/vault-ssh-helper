@@ -100,11 +100,12 @@ information, please see the [HCL Specification][HCL].
 |`tls_skip_verify`  |Skip TLS certificate verification. Highly not recommended.
 
 Sample `config.hcl`:
+
 ```hcl
-vault_addr="http://127.0.0.1:8200"
-ssh_mount_point="ssh"
-ca_cert="/etc/vault-ssh-helper.d/vault.crt"
-tls_skip_verify=false
+vault_addr = "http://127.0.0.1:8200"
+ssh_mount_point = "ssh"
+ca_cert = "/etc/vault-ssh-helper.d/vault.crt"
+tls_skip_verify = false
 ```
 
 PAM Configuration
