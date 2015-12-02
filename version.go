@@ -8,8 +8,8 @@ import (
 var GitCommit string
 
 const Name = "vault-ssh-helper"
-const Version = "0.1.0"
-const VersionPrerelease = ""
+const Version = "0.1.1"
+const VersionPrerelease = "dev"
 
 // formattedVersion returns a formatted version string which includes the git
 // commit and development information.
