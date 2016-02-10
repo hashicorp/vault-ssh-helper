@@ -36,9 +36,12 @@ but with the convenience of using Go.
 |`verify`     |To verify that the helper is installed correctly and is able to talk to Vault successfully.
 |`config-file`|The path to the configuration file. The properties of config file are mentioned below.
 
+## Download vault-ssh-helper
+
+Download the latest version of vault-ssh-helper <a href="https://releases.hashicorp.com/vault-ssh-helper/0.1.0/">here</a>.
+
 ## Installation
 -----
-
 Install `Go` in your machine (1.4+) and set `GOPATH` accordingly. Clone this repository
 in $GOPATH/src/github.com/hashicorp/vault-ssh-helper. Install all the dependant binaries
 like godep, gox, vet etc by bootstrapping the environment.
