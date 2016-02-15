@@ -84,7 +84,7 @@ $ make test TEST=./helper
 
 If you intend to cross compile the binary, run `make bin`.
 
-**[Note]: Below configuration is only applicable for Linux and it differs with each platform.**
+**[Note]: Below configuration is only applicable for Ubuntu 14.04 and the configuration differs with with each platform.**
 
 Agent Configuration
 -------------------
@@ -118,7 +118,7 @@ Modify `/etc/pam.d/sshd` file.
 ```hcl
 #@include common-auth
 auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-helper -config-file=/etc/vault-ssh-helper.d/config.hcl
-auth optional pam_unix.so no_set_pass use_first_pass nodelay
+auth optional pam_unix.so not_set_pass use_first_pass nodelay
 ```
 
 Firstly, comment out the previous authentication mechanism `common-auth`, standard linux authentication module.
@@ -144,7 +144,7 @@ to gracefully return by closing an open pipe.
 |`auth`          |PAM type that the configuration applies to.
 |`optional`      |If the module fails, authentication does not fail. This is a hack to properly return from the PAM flow. It closes an open pipe which helper fails to close.
 |`pam_unix.so`   |Linux's standard authentication module.
-|`no_set_pass`   |Module should not be allowed to set or modify passwords.
+|`not_set_pass`  |Module should not be allowed to set or modify passwords.
 |`use_first_pass`|Do not display password prompt again. Use the password from the previous module.
 |`nodelay`       |Avoids the induced delay after entering a wrong password.
 
