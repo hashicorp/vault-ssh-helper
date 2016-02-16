@@ -7,6 +7,11 @@ go:
 
 install: make updatedeps
 
+# whitelist master branch
+branches:
+  only:
+    - master
+
 script:
   - make
   - make test
