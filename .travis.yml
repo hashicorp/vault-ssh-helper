@@ -1,12 +1,11 @@
----
+sudo: false
+
 language: go
 
 go:
   - 1.6
 # tip is currently using go1.4.1
 # - tip
-
-install: make updatedeps
 
 matrix:
   allow_failures:
@@ -17,8 +16,8 @@ branches:
   only:
     - master
 
-install:
-  - true
+install: make updatedeps
+#  - true
 
 script:
   - make

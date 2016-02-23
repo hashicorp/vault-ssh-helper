@@ -69,7 +69,7 @@ func Run(args []string) error {
 	}
 
 	// Load the configuration for this helper
-	clientConfig, err := api.LoadSSHAgentConfig(config)
+	clientConfig, err := api.LoadSSHHelperConfig(config)
 	if err != nil {
 		return err
 	}
