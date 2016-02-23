@@ -81,8 +81,8 @@ func Run(args []string) error {
 		}
 		clientConfig.CACert = ""
 		clientConfig.CAPath = ""
-	} else if clientConfig.CACert == "" && clientConfig.CAPath == "" {
-		return fmt.Errorf("certification information needs to be provided using ca_cert or ca_path option")
+	} else if strings.HasPrefix(strings.ToLower(clientConfig.VaultAddr), "http://") {
+		return fmt.Errorf("unsupported scheme. use 'dev' mode")
 	}
 
 	// Get an http client to interact with Vault server based on the configuration
@@ -98,7 +98,7 @@ func Run(args []string) error {
 	//
 	// If mount point is not mentioned in the config file, default mount point
 	// of the SSH backend will be used.
-	log.Printf("[INFO] Using SSH Mount point: %s", clientConfig.SSHMountPoint)
+	log.Printf("[INFO] using SSH mount point: %s", clientConfig.SSHMountPoint)
 	var otp string
 	if verifyOnly {
 		otp = api.VerifyEchoRequest
