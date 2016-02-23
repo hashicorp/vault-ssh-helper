@@ -1,4 +1,4 @@
-vault-ssh-helper
+vault-ssh-helper[![Build Status](https://travis-ci.org/hashicorp/vault-ssh-helper.svg)](https://travis-ci.org/hashicorp/vault-ssh-helper)
 ===============
 
 ssh-helper is a counterpart to Vault's (https://github.com/hashicorp/vault)
