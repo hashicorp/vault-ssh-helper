@@ -52,7 +52,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// response and return
 	if req.OTP == api.VerifyEchoRequest {
 		if resp.Message == api.VerifyEchoResponse {
-			log.Printf("[INFO] ssh-helper verification successful!")
+			log.Printf("[INFO] vault-ssh-helper verification successful!")
 			return nil
 		} else {
 			return fmt.Errorf("Invalid echo response")
