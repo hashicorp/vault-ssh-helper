@@ -73,7 +73,6 @@ func Run(args []string) error {
 	if err != nil {
 		return err
 	}
-	log.Printf("vishal: clientConfig: %#v\n", clientConfig)
 
 	if dev {
 		log.Printf("==> WARNING: Dev mode is enabled!")

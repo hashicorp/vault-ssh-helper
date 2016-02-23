@@ -34,7 +34,7 @@ vs using this workaround to get the job done, but with the convenience of using 
 |-------------|-----------|
 |`verify-only`|Verifies that ssh-helper is installed correctly and is able to communicate with Vault.
 |`config`     |The path to the configuration file. Configuration options are mentioned below.
-|`dev`        |ssh-helper Vault TLS disabled. This is NOT recommended for production use. Use with caution.
+|`dev`        |ssh-helper communicates with Vault with TLS disabled. This is NOT recommended for production use. Use with caution.
 
 ## Download vault-ssh-helper
 
