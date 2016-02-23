@@ -2,16 +2,23 @@
 language: go
 
 go:
-  - 1.5
   - 1.6
-  - tip
+# tip is currently using go1.4.1
+# - tip
 
 install: make updatedeps
+
+matrix:
+  allow_failures:
+    - go:tip
 
 # whitelist master branch
 branches:
   only:
     - master
+
+install:
+  - true
 
 script:
   - make
