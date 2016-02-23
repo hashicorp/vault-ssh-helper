@@ -1,0 +1,18 @@
+---
+language: go
+
+go:
+  - 1.5
+  - 1.6
+  - tip
+
+install: make updatedeps
+
+# whitelist master branch
+branches:
+  only:
+    - master
+
+script:
+  - make
+  - make test
