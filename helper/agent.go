@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
-// Structure representing the helper's verification request.
+// Structure representing the ssh-helper's verification request.
 type SSHVerifyRequest struct {
 	// Http client to communicate with Vault
 	Client *api.Client
@@ -23,8 +23,8 @@ type SSHVerifyRequest struct {
 	// entered by the user at the prompt.
 	OTP string
 
-	// Structure containing configuration parameters of SSH helper
-	Config *api.SSHAgentConfig
+	// Structure containing configuration parameters of ssh-helper
+	Config *api.SSHHelperConfig
 }
 
 // Reads the OTP from the prompt and sends the OTP to vault server. Server searches
@@ -36,14 +36,14 @@ type SSHVerifyRequest struct {
 // IP address returned by vault should match the addresses of network interfaces or
 // it should belong to the list of allowed CIDR blocks in the config file.
 //
-// This method is also used to verify if the communication between helper and Vault
+// This method is also used to verify if the communication between ssh-helper and Vault
 // server can be established with the given configuration data. If OTP in the request
 // matches the echo request message, then the echo response message is expected in
 // the response, which indicates successful connection establishment.
 func VerifyOTP(req *SSHVerifyRequest) error {
 	// Validating the OTP from Vault server. The response from server can have
 	// either the response message set OR username and IP set.
-	resp, err := req.Client.SSHAgentWithMountPoint(req.MountPoint).Verify(req.OTP)
+	resp, err := req.Client.SSHHelperWithMountPoint(req.MountPoint).Verify(req.OTP)
 	if err != nil {
 		return err
 	}
@@ -52,7 +52,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// response and return
 	if req.OTP == api.VerifyEchoRequest {
 		if resp.Message == api.VerifyEchoResponse {
-			log.Printf("[INFO] Agent verification successful!")
+			log.Printf("[INFO] ssh-helper verification successful!")
 			return nil
 		} else {
 			return fmt.Errorf("Invalid echo response")

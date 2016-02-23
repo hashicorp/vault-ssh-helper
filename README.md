@@ -1,30 +1,29 @@
-Vault SSH Helper
+vault-ssh-helper
 ===============
 
-Vault SSH Agent is a counterpart to Vault's (https://github.com/hashicorp/vault)
+ssh-helper is a counterpart to Vault's (https://github.com/hashicorp/vault)
 SSH backend. It enables creation of One-Time-Passwords (OTP) by Vault servers.
 OTPs will be used as client authentication credentials while establishing SSH
 connections with remote hosts.
 
 All the remote hosts that belong to SSH backend's role of type OTP, will need this
-helper to be installed, get its SSH configuration changed to enable keyboard-interactive
-authentication and redirect its client authentication responsibility to Vault SSH Agent.
+ssh-helper to be installed, get its SSH configuration changed to enable keyboard-interactive
+authentication and redirect its client authentication responsibility to ssh-helper.
 
 Vault authenticated users contact Vault server and get an OTP issued for any specific
-username and IP address. While establishing an SSH connection, helper reads the OTP
+username and IP address. While establishing an SSH connection, ssh-helper reads the OTP
 from the password prompt and sends it to Vault server for verification. Only if Vault
 server verifies the OTP, client is authenticated and the SSH connection is allowed.
 
-This helper is not a PAM module, but it does the job of one. Agent's binary is run as
+ssh-helper is not a PAM module, but it does the job of one. ssh-helper's binary is run as
 an external command using `pam_exec.so` with access to password. Graceful execution
 and exit of this command is a 'requisite' for authentication to be successful. If
 the OTP is not validated, the binary exits with a non-zero status and hence the
-desired effect is achieved.
+authentication fails.
 
-PAM modules are supposed to be shared object files and Go (currently) does not
-support creation of `.so` files. It was a choice between writing a PAM module in
-C and maintain it for all platforms vs using this workaround to get the job done,
-but with the convenience of using Go.
+PAM modules are supposed to be shared object files. A decisionto write an ssh-helper
+in Go was a choice between writing a PAM module in C and maintaining it for all platforms
+vs using this workaround to get the job done, but with the convenience of using Go.
 
 ## Usage
 -----
@@ -33,8 +32,9 @@ but with the convenience of using Go.
 ### Options
 |Option       |Description|
 |-------------|-----------|
-|`verify`     |To verify that the helper is installed correctly and is able to talk to Vault successfully.
-|`config-file`|The path to the configuration file. The properties of config file are mentioned below.
+|`verify-only`|Verifies that ssh-helper is installed correctly and is able to communicate with Vault.
+|`config`     |The path to the configuration file. Configuration options are mentioned below.
+|`dev`        |ssh-helper Vault TLS disabled. This is NOT recommended for production use. Use with caution.
 
 ## Download vault-ssh-helper
 
@@ -42,7 +42,7 @@ Download the latest version of vault-ssh-helper <a href="https://releases.hashic
 
 ## Installation
 -----
-Install `Go` in your machine (1.4+) and set `GOPATH` accordingly. Clone this repository
+Install `Go` in your machine and set `GOPATH` accordingly. Clone this repository
 in $GOPATH/src/github.com/hashicorp/vault-ssh-helper. Install all the dependant binaries
 like godep, gox, vet etc by bootstrapping the environment.
 
@@ -50,24 +50,27 @@ like godep, gox, vet etc by bootstrapping the environment.
 $ make updatedeps
 ```
 
-Build and install Vault SSH Agent.
+Build and install vault-ssh-helper.
 
 ```shell
 $ make
 $ make install
 ```
 
-Follow the instructions below and modify SSH server, PAM configurations and configure
-the helper. Check if the helper is installed and configured correctly and is able to
-communicate with Vault server properly.
+Follow the instructions below and modify SSH server configuration, PAM configuration
+and ssh-helper configuration. Check if ssh-helper is installed and configured correctly
+and also is able to communicate with Vault server properly. Before verifying the ssh-helper,
+make sure that Vault server is up and running and it has mounted the SSH backend.
+Also make sure that the mount path of the SSH backend is properly updated in the ssh-helper's
+config file.
 
 ```shell
-$ vault-ssh-helper -verify -config-file=<path-to-config-file>
+$ vault-ssh-helper -verify-only -config=<path-to-config-file>
 Using SSH Mount point: ssh
-Agent verification successful!
+ssh-helper verification successful!
 ```
 
-If you intend to contribute to this project, compile a development version of helper,
+If you intend to contribute to this project, compile a development version of ssh-helper,
 using `make dev`. This will put the binary in `bin` and `$GOPATH/bin` folders.
 
 ```shell
@@ -84,12 +87,13 @@ $ make test TEST=./helper
 
 If you intend to cross compile the binary, run `make bin`.
 
-**[Note]: Below configuration is only applicable for Ubuntu 14.04 and the configuration differs with with each platform.**
+**[Note]: Below configuration is only applicable for Ubuntu 14.04 and the configurations differ
+with with each platform and distribution.**
 
-Agent Configuration
+ssh-helper Configuration
 -------------------
-Agent's configuration is written in [HashiCorp Configuration Language (HCL)][HCL].
-By proxy, this means that Agent's configuration is JSON-compatible. For more
+ssh-helper's configuration is written in [HashiCorp Configuration Language (HCL)][HCL].
+By proxy, this means that ssh-helper's configuration is JSON-compatible. For more
 information, please see the [HCL Specification][HCL].
 
 ### Properties
@@ -97,18 +101,16 @@ information, please see the [HCL Specification][HCL].
 |-------------------|-----------|
 |`vault_addr`       |[Required]Address of the Vault server.
 |`ssh_mount_point`  |[Required]Mount point of SSH backend in Vault server.
-|`ca_cert`          |Path of PEM encoded CA certificate file used to verify Vault server's SSL certificate.
-|`ca_path`          |Path to directory of PEM encoded CA certificate files used to verify Vault server.
-|`allowed_cidr_list`|List of comma seperated CIDR blocks. If the IP used by user to connect to host is different than the addresses of host's network interfaces, in other words, if the address is NATed, then helper cannot authenticate the IP. In these cases, the IP returned by Vault will be matched with the CIDR blocks in this list. If it matches, the authentication succeeds. (Use with caution)
-|`tls_skip_verify`  |Skip TLS certificate verification. Highly not recommended.
+|`ca_cert`          |Path of PEM encoded CA certificate file used to verify Vault server's SSL certificate. `-dev` mode ignores this value.
+|`ca_path`          |Path to directory of PEM encoded CA certificate files used to verify Vault server. `-dev` mode ignores this value.
+|`allowed_cidr_list`|List of comma seperated CIDR blocks. If the IP used by user to connect to host is different than the addresses of host's network interfaces, in other words, if the address is NATed, then ssh-helper cannot authenticate the IP. In these cases, the IP returned by Vault will be matched with the CIDR blocks in this list. If it matches, the authentication succeeds. (Use with caution)
 
 Sample `config.hcl`:
 
 ```hcl
-vault_addr = "http://127.0.0.1:8200"
+vault_addr = "https://vault.example.com:8200"
 ssh_mount_point = "ssh"
 ca_cert = "/etc/vault-ssh-helper.d/vault.crt"
-tls_skip_verify = false
 ```
 
 PAM Configuration
@@ -117,32 +119,32 @@ Modify `/etc/pam.d/sshd` file.
 
 ```hcl
 #@include common-auth
-auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-helper -config-file=/etc/vault-ssh-helper.d/config.hcl
+auth requisite pam_exec.so quiet expose_authtok log=/tmp/vaultssh.log /usr/local/bin/vault-ssh-helper -config=/etc/vault-ssh-helper.d/config.hcl
 auth optional pam_unix.so not_set_pass use_first_pass nodelay
 ```
 
-Firstly, comment out the previous authentication mechanism `common-auth`, standard linux authentication module.
+First, comment out the previous authentication mechanism `common-auth`, standard linux authentication module.
 
-Next, configure the helper.
+Next, configure the ssh-helper.
 
 |Keyword          |Description |
 |-----------------|------------|
 |`auth`           |PAM type that the configuration applies to.
 |`requisite`      |If the external command fails, the authentication should fail.
-|`pam_exec.so`    |PAM module that runs an external command. In this case, an SSH helper.
-|`quiet`          |Supress the exit status of helper from being displayed.
+|`pam_exec.so`    |PAM module that runs an external command (ssh-helper).
+|`quiet`          |Supress the exit status of ssh-helper from being displayed.
 |`expose_authtok` |Binary can read the password from stdin.
-|`vault-ssh-helper`|Absolute path to helper's binary.
-|`log`            |Path to helper's log file.
-|`config-file`    |Parameter to `vault-ssh-helper`, the path to config file.
+|`vault-ssh-helper`|Absolute path to ssh-helper's binary.
+|`log`            |Path to ssh-helper's log file.
+|`config-file`    |Parameter to ssh-helper, the path to config file.
 
-Lastly, return if helper authenticates the client successfully. This is a workaround
-to gracefully return by closing an open pipe.
+Lastly, return if ssh-helper authenticates the client successfully. This is a workaround
+to gracefully return, by closing an open pipe.
 
 |Option          |Description |
 |----------------|------------|
 |`auth`          |PAM type that the configuration applies to.
-|`optional`      |If the module fails, authentication does not fail. This is a hack to properly return from the PAM flow. It closes an open pipe which helper fails to close.
+|`optional`      |If the module fails, authentication does not fail. This is a hack to properly return from the PAM flow. It closes an open pipe which ssh-helper fails to close.
 |`pam_unix.so`   |Linux's standard authentication module.
 |`not_set_pass`  |Module should not be allowed to set or modify passwords.
 |`use_first_pass`|Do not display password prompt again. Use the password from the previous module.

@@ -14,12 +14,12 @@ import (
 
 // This binary will be run as a command with the goal of client authentication.
 // This is not a PAM module per se, but binary fails if verification of OTP
-// is fails. The PAM configuration runs this binary as an external command via
+// fails. The PAM configuration runs this binary as an external command via
 // the pam_exec.so module as a 'requisite'. Essentially, if this binary fails,
 // then the authentication fails.
 //
 // After the installation and configuration of this helper, verify the installation
-// with -verify option.
+// with -verify-only option.
 func main() {
 	err := Run(os.Args[1:])
 	if err != nil {
@@ -46,11 +46,12 @@ func Run(args []string) error {
 		}
 	}
 
-	var configFilePath string
-	var verify bool
+	var config string
+	var dev, verifyOnly bool
 	flags := flag.NewFlagSet("ssh-helper", flag.ContinueOnError)
-	flags.StringVar(&configFilePath, "config-file", "", "")
-	flags.BoolVar(&verify, "verify", false, "")
+	flags.StringVar(&config, "config", "", "")
+	flags.BoolVar(&verifyOnly, "verify-only", false, "")
+	flags.BoolVar(&dev, "dev", false, "")
 
 	flags.Usage = func() {
 		fmt.Printf("%s\n", Help())
@@ -63,32 +64,44 @@ func Run(args []string) error {
 
 	args = flags.Args()
 
-	if configFilePath == "" {
-		return fmt.Errorf("missing config-file")
+	if len(config) == 0 {
+		return fmt.Errorf("at least one config path must be specified with -config")
 	}
 
 	// Load the configuration for this helper
-	config, err := api.LoadSSHAgentConfig(configFilePath)
+	clientConfig, err := api.LoadSSHAgentConfig(config)
 	if err != nil {
 		return err
 	}
+	log.Printf("vishal: clientConfig: %#v\n", clientConfig)
+
+	if dev {
+		log.Printf("==> WARNING: Dev mode is enabled!")
+		if strings.HasPrefix(strings.ToLower(clientConfig.VaultAddr), "https://") {
+			return fmt.Errorf("unsupported scheme in 'dev' mode")
+		}
+		clientConfig.CACert = ""
+		clientConfig.CAPath = ""
+	} else if clientConfig.CACert == "" && clientConfig.CAPath == "" {
+		return fmt.Errorf("certification information needs to be provided using ca_cert or ca_path option")
+	}
 
 	// Get an http client to interact with Vault server based on the configuration
-	client, err := config.NewClient()
+	client, err := clientConfig.NewClient()
 	if err != nil {
 		return err
 	}
 
 	// Logging SSH mount point since SSH backend mount point at Vault server
-	// can vary and helper has no way of knowing it automatically. Agent reads
+	// can vary and helper has no way of knowing it automatically. ssh-helper reads
 	// the mount point from the configuration file and uses the same to talk
 	// to Vault. In case of errors, this can be used for debugging.
 	//
 	// If mount point is not mentioned in the config file, default mount point
 	// of the SSH backend will be used.
-	log.Printf("[INFO] Using SSH Mount point: %s", config.SSHMountPoint)
+	log.Printf("[INFO] Using SSH Mount point: %s", clientConfig.SSHMountPoint)
 	var otp string
-	if verify {
+	if verifyOnly {
 		otp = api.VerifyEchoRequest
 	} else {
 		// Reading the one-time-password from the prompt. This is enabled
@@ -106,9 +119,9 @@ func Run(args []string) error {
 	// will be a OTP validation request.
 	return helper.VerifyOTP(&helper.SSHVerifyRequest{
 		Client:     client,
-		MountPoint: config.SSHMountPoint,
+		MountPoint: clientConfig.SSHMountPoint,
 		OTP:        otp,
-		Config:     config,
+		Config:     clientConfig,
 	})
 }
 
@@ -116,15 +129,15 @@ func Help() string {
 	helpText := `
 Usage: vault-ssh-helper [options]
 
-  Vault SSH Agent takes the One-Time-Password (OTP) from the client and
+  vault-ssh-helper takes the One-Time-Password (OTP) from the client and
   validates it with Vault server. This binary should be used as an external
   command for authenticating clients during for keyboard-interactive auth
   of SSH server.
 
 Options:
 
-  -config-file=<path>         The path on disk to a configuration file.
-  -verify=<value>             Verify the given one time password.
+  -config=<path>              The path on disk to a configuration file.
+  -verify-only                Verify the installation and communication with Vault server
   -version                    Display version.
 `
 	return strings.TrimSpace(helpText)
