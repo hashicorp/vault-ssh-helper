@@ -111,7 +111,7 @@ func validateIP(ipStr string, cidrList string) error {
 	}
 
 	if len(cidrList) == 0 {
-		return fmt.Errorf("IP did not match any of the network interface address. configure 'allowed_cidr_list' option")
+		return fmt.Errorf("IP did not match any of the network interface addresses. If this was expected, configure the 'allowed_cidr_list' option to allow the IP.")
 	}
 
 	// None of the network interface addresses matched the given IP.
