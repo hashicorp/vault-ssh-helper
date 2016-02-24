@@ -55,7 +55,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 			log.Printf("[INFO] vault-ssh-helper verification successful!")
 			return nil
 		} else {
-			return fmt.Errorf("Invalid echo response")
+			return fmt.Errorf("invalid echo response")
 		}
 	}
 
@@ -63,7 +63,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// requested. If the response from vault server mentions the username
 	// associated with the OTP. It has to be a match.
 	if resp.Username != os.Getenv("PAM_USER") {
-		return fmt.Errorf("Username mismatch")
+		return fmt.Errorf("username mismatch")
 	}
 
 	// The IP address to which the OTP is associated should be one among
@@ -76,7 +76,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// Reaching here means that there were no problems. Returning nil will
 	// gracefully terminate the binary and client will be authenticated to
 	// establish the session.
-	log.Printf("[INFO] %s@%s Authenticated!", resp.Username, resp.IP)
+	log.Printf("[INFO] %s@%s authenticated!", resp.Username, resp.IP)
 	return nil
 }
 
@@ -123,7 +123,7 @@ func validateIP(ipStr string, cidrList string) error {
 		}
 	}
 
-	return fmt.Errorf("Invalid IP")
+	return fmt.Errorf("invalid IP")
 }
 
 // Checks if the given CIDR block encompasses the given IP address.
