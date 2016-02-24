@@ -132,8 +132,5 @@ func belongsToCIDR(ip net.IP, cidr string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	if ipnet.Contains(ip) {
-		return true, nil
-	}
-	return false, nil
+	return ipnet.Contains(ip), nil
 }
