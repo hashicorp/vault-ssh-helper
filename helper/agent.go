@@ -110,6 +110,10 @@ func validateIP(ipStr string, cidrList string) error {
 		}
 	}
 
+	if len(cidrList) == 0 {
+		return fmt.Errorf("IP did not match any of the network interface address. configure 'allowed_cidr_list' option")
+	}
+
 	// None of the network interface addresses matched the given IP.
 	// Now, try to find a match with the given CIDR blocks.
 	cidrs := strings.Split(cidrList, ",")
