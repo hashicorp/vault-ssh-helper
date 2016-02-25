@@ -38,6 +38,11 @@ if [ "${DEV}x" != "x" ]; then
     XC_ARCH=$(go env GOARCH)
 fi
 
+if ! which gox > /dev/null; then
+    echo "==> Installing gox..."
+    go get -u github.com/mitchellh/gox
+fi
+
 # Build!
 echo "==> Building..."
 gox \
