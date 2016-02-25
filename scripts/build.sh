@@ -47,8 +47,6 @@ fi
 echo "==> Building..."
 gox \
     -os="${XC_OS}" \
-    -os="!freebsd" \
-    -os="!openbsd" \
     -arch="${XC_ARCH}" \
     -ldflags "-X github.com/hashicorp/vault-ssh-helper/main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
     -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-helper" \
