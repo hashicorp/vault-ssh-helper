@@ -36,6 +36,9 @@ testrace: generate
 # vet runs the Go source code static analysis tool `vet` to find
 # any common errors.
 vet:
+	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
+		go get golang.org/x/tools/cmd/vet; \
+	fi
 	@go list -f '{{.Dir}}' ./... | grep -v /vendor/) \
 		| grep -v '.*github.com/hashicorp/vault-ssh-helper$$' \
 		| xargs go tool vet ; if [ $$? -eq 1 ]; then \
@@ -54,7 +57,7 @@ generate:
 updatedeps:
 	go get -u github.com/mitchellh/gox
 	go get -u golang.org/x/tools/cmd/vet
-	$(go list ./... | grep -v /vendor/) \
+	echo $$(go list ./... | grep -v /vendor/) \
 		| xargs go list -f '{{ join .Deps "\n" }}{{ printf "\n" }}{{ join .TestImports "\n" }}' \
 		| grep -v github.com/hashicorp/$(NAME) \
 		| xargs go get -f -u -v

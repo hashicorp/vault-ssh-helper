@@ -16,8 +16,8 @@ branches:
   only:
     - master
 
-install: make updatedeps
-#  - true
+install:
+ - true
 
 script:
   - make
