@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 # This script builds the application from source for multiple platforms.
 set -e
@@ -7,9 +7,6 @@ set -e
 SOURCE="${BASH_SOURCE[0]}"
 while [ -h "$SOURCE" ] ; do SOURCE="$(readlink "$SOURCE")"; done
 DIR="$( cd -P "$( dirname "$SOURCE" )/.." && pwd )"
-
-# Get the name of the binary
-NAME="$(basename "$DIR")"
 
 # Change into that directory
 cd "$DIR"
@@ -20,11 +17,14 @@ GIT_DIRTY=$(test -n "`git status --porcelain`" && echo "+CHANGES" || true)
 
 # Determine the arch/os combos we're building for
 XC_ARCH=${XC_ARCH:-"386 amd64 arm"}
-XC_OS=${XC_OS:-"darwin freebsd linux netbsd openbsd solaris windows"}
+XC_OS=${XC_OS:-linux darwin windows freebsd openbsd}
 
-# Install dependencies
-echo "==> Getting dependencies..."
-go get ./...
+GOPATH=${GOPATH:-$(go env GOPATH)}
+case $(uname) in
+    CYGWIN*)
+        GOPATH="$(cygpath $GOPATH)"
+        ;;
+esac
 
 # Delete the old dir
 echo "==> Removing old directory..."
@@ -42,18 +42,14 @@ fi
 echo "==> Building..."
 gox \
     -os="${XC_OS}" \
+    -os="!freebsd" \
+    -os="!openbsd" \
     -arch="${XC_ARCH}" \
-    -ldflags "-X main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
-    -output "pkg/{{.OS}}_{{.Arch}}/${NAME}" \
+    -ldflags "-X github.com/hashicorp/vault-ssh-helper/main.GitCommit ${GIT_COMMIT}${GIT_DIRTY}" \
+    -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-helper" \
     .
 
 # Move all the compiled things to the $GOPATH/bin
-GOPATH=${GOPATH:-$(go env GOPATH)}
-case $(uname) in
-    CYGWIN*)
-        GOPATH="$(cygpath $GOPATH)"
-        ;;
-esac
 OLDIFS=$IFS
 IFS=: MAIN_GOPATH=($GOPATH)
 IFS=$OLDIFS
