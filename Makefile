@@ -1,4 +1,4 @@
-TEST?=./...
+TEST?=$$(go list ./... | grep -v /vendor/)
 NAME?=$(shell basename "$(CURDIR)")
 VERSION = $(shell awk -F\" '/^const Version/ { print $$2; exit }' version.go)
 
@@ -36,7 +36,7 @@ testrace: generate
 # vet runs the Go source code static analysis tool `vet` to find
 # any common errors.
 vet:
-	@go list -f '{{.Dir}}' ./... \
+	@go list -f '{{.Dir}}' ./... | grep -v /vendor/) \
 		| grep -v '.*github.com/hashicorp/vault-ssh-helper$$' \
 		| xargs go tool vet ; if [ $$? -eq 1 ]; then \
 			echo ""; \
@@ -47,14 +47,14 @@ vet:
 # generate runs `go generate` to build the dynamically generated
 # source files.
 generate:
-	go generate ./...
+	go generate $(go list ./... | grep -v /vendor/)
 
 # updatedeps installs all the dependencies needed to run and build - this is
 # specifically designed to only pull deps, but not self.
 updatedeps:
 	go get -u github.com/mitchellh/gox
 	go get -u golang.org/x/tools/cmd/vet
-	go list ./... \
+	$(go list ./... | grep -v /vendor/) \
 		| xargs go list -f '{{ join .Deps "\n" }}{{ printf "\n" }}{{ join .TestImports "\n" }}' \
 		| grep -v github.com/hashicorp/$(NAME) \
 		| xargs go get -f -u -v
