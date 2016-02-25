@@ -49,7 +49,7 @@ rm -rf ./pkg/dist
 mkdir -p ./pkg/dist
 for FILENAME in $(find ./pkg -mindepth 1 -maxdepth 1 -type f); do
   FILENAME=$(basename $FILENAME)
-  cp ./pkg/${FILENAME} ./pkg/dist/${NAME}_${VERSION}_${FILENAME}
+  cp ./pkg/${FILENAME} ./pkg/dist/vault-ssh-helper_${VERSION}_${FILENAME}
 done
 
 if [ -z $NOSIGN ]; then
