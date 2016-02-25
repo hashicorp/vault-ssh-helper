@@ -35,8 +35,7 @@
 		},
 		{
 			"ImportPath": "github.com/hashicorp/vault/api",
-			"Comment": "v0.5.0-156-gc77e00d",
-			"Rev": "c77e00d77316b778708bc6df9a0ea027b2fd2cfe"
+			"Rev": "b280daa10700c58274ec3169cbd91b6a5c3f265a"
 		},
 		{
 			"ImportPath": "github.com/mitchellh/mapstructure",
