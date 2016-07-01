@@ -117,6 +117,7 @@ please see the [HCL Specification](https://github.com/hashicorp/hcl).
 |`ca_cert`          |Path of a PEM-encoded CA certificate file used to verify the Vault server's TLS certificate. `-dev` mode ignores this value.
 |`ca_path`          |Path to directory of PEM-encoded CA certificate files used to verify the Vault server's TLS certiciate. `-dev` mode ignores this value.
 |`tls_skip_verify`  |Skip TLS certificate verification. Use with caution.
+|`allowed_roles`    |List of comma-separated Vault SSH roles. The OTP verification response from the server will contain the name of the role against which the OTP was issued. Specify which roles are allowed to login using this configuration. Set this to `*` to allow any role to perform a login.
 |`allowed_cidr_list`|List of comma-separated CIDR blocks. If the IP used by the user to connect to the host is different than the address(es) of the host's network interface(s) (for instance, if the address is NAT-ed), then `vault-ssh-helper` cannot authenticate the IP. In these cases, the IP returned by Vault will be matched with the CIDR blocks in this list. If it matches, the authentication succeeds. (Use with caution)
 
 Sample `config.hcl`:
