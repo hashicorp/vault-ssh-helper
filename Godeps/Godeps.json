@@ -1,0 +1,79 @@
+{
+	"ImportPath": "github.com/hashicorp/vault-ssh-helper",
+	"GoVersion": "go1.6",
+	"GodepVersion": "v74",
+	"Packages": [
+		"./..."
+	],
+	"Deps": [
+		{
+			"ImportPath": "github.com/fatih/structs",
+			"Rev": "24f3e1df2f5ffab5696aaa95cf0b8dea167ef084"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/errwrap",
+			"Rev": "7554cd9344cec97297fa6649b055a8c98c2a1e55"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-cleanhttp",
+			"Rev": "ad28ea4487f05916463e2423a55166280e8254b5"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-multierror",
+			"Rev": "d30f09973e19c1dfcd120b2d9c4f168e68d6b5d5"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/go-rootcerts",
+			"Rev": "6bb64b370b90e7ef1fa532be9e591a81c3493e00"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/ast",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/parser",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/scanner",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/strconv",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/hcl/token",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/json/parser",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/json/scanner",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/hcl/json/token",
+			"Rev": "b5065874bcc0257ec10e7a98c8132235837b9193"
+		},
+		{
+			"ImportPath": "github.com/hashicorp/vault/api",
+			"Comment": "v0.6.0-rebuild-134-gb632ef5",
+			"Rev": "b632ef58e44fda3305e8cdad565f1f6643b0fd93"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/go-homedir",
+			"Rev": "756f7b183b7ab78acdbbee5c7f392838ed459dda"
+		},
+		{
+			"ImportPath": "github.com/mitchellh/mapstructure",
+			"Rev": "d2dd0262208475919e1a362f675cfc0e7c10e905"
+		}
+	]
+}
