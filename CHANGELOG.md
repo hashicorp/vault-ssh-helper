@@ -1,3 +1,14 @@
+## 0.1.2 (Unreleased)
+
+IMPROVEMENTS:
+  * Added `allowed_roles` option to configuration, which enforces specified
+    role names to be present in the verification response received by the agent.
+
+UPGRADE NOTES:
+  * The option `allowed_roles` is a breaking change. When vault-ssh-helper
+    is upgraded, it is required that the existing configuration files have
+    an entry for `allowed_roles="*"` to be backwards compatible.
+
 ## 0.1.1 (February 25 2016)
 
 SECURITY CHANGES:
