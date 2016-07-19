@@ -73,11 +73,50 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 		return err
 	}
 
+	// If AllowedRoles is `*`, regardless of the rolename returned by the
+	// Vault server, authentication succeeds. If AllowedRoles is set to
+	// specific role names, one of these should match the the role name in
+	// the response for the authentication to succeed.
+	if err := validateRoleName(resp.RoleName, req.Config.AllowedRoles); err != nil {
+		return err
+	}
+
 	// Reaching here means that there were no problems. Returning nil will
 	// gracefully terminate the binary and client will be authenticated to
 	// establish the session.
 	log.Printf("[INFO] %s@%s authenticated!", resp.Username, resp.IP)
 	return nil
+}
+
+// Checks if the role name present in the verification response matches
+// any of the allowed roles on the helper.
+func validateRoleName(respRoleName, allowedRoles string) error {
+	// Fail the validation when invalid allowed_roles is mentioned
+	if allowedRoles == "" {
+		return fmt.Errorf("missing allowed_roles")
+	}
+
+	// Fastpath to allow any role name
+	if allowedRoles == "*" {
+		return nil
+	}
+
+	respRoleName = strings.TrimSpace(respRoleName)
+	if respRoleName == "" {
+		return fmt.Errorf("missing role name in the verification response")
+	}
+
+	roles := strings.Split(allowedRoles, ",")
+	log.Printf("roles: %s\n", roles)
+
+	for _, role := range roles {
+		// If an allowed role matches the role name in the response,
+		// validation succeeds.
+		if strings.TrimSpace(role) == respRoleName {
+			return nil
+		}
+	}
+	return fmt.Errorf("role name in the verification response not matching any of the allowed_roles")
 }
 
 // Finds out if given IP address belongs to the IP addresses associated with
