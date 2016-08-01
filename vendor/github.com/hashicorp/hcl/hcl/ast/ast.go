@@ -56,7 +56,7 @@ func (o *ObjectList) Filter(keys ...string) *ObjectList {
 	var result ObjectList
 	for _, item := range o.Items {
 		// If there aren't enough keys, then ignore this
-		if item == nil || len(item.Keys) < len(keys) {
+		if len(item.Keys) < len(keys) {
 			continue
 		}
 
@@ -133,6 +133,12 @@ type ObjectItem struct {
 }
 
 func (o *ObjectItem) Pos() token.Pos {
+	// I'm not entirely sure what causes this, but removing this causes
+	// a test failure. We should investigate at some point.
+	if len(o.Keys) == 0 {
+		return token.Pos{}
+	}
+
 	return o.Keys[0].Pos()
 }
 
