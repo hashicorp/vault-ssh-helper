@@ -40,7 +40,7 @@ func main() {
 // a proper echo message is responded, the verification will be successful.
 func Run(args []string) error {
 	for _, arg := range args {
-		if arg == "-v" || arg == "-version" || arg == "--version" {
+		if arg == "version" || arg == "-v" || arg == "-version" || arg == "--version" {
 			fmt.Println(formattedVersion())
 			return nil
 		}
