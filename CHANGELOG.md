@@ -1,4 +1,4 @@
-## 0.1.2 (Unreleased)
+## 0.1.2 (August 24 2016)
 
 IMPROVEMENTS:
   * Added `allowed_roles` option to configuration, which enforces specified
