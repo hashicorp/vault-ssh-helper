@@ -2,6 +2,8 @@ package api
 
 import (
 	"fmt"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 func (c *Sys) ListAuth() (map[string]*AuthMount, error) {
@@ -12,9 +14,32 @@ func (c *Sys) ListAuth() (map[string]*AuthMount, error) {
 	}
 	defer resp.Body.Close()
 
-	var result map[string]*AuthMount
+	var result map[string]interface{}
 	err = resp.DecodeJSON(&result)
-	return result, err
+	if err != nil {
+		return nil, err
+	}
+
+	mounts := map[string]*AuthMount{}
+	for k, v := range result {
+		switch v.(type) {
+		case map[string]interface{}:
+		default:
+			continue
+		}
+		var res AuthMount
+		err = mapstructure.Decode(v, &res)
+		if err != nil {
+			return nil, err
+		}
+		// Not a mount, some other api.Secret data
+		if res.Type == "" {
+			continue
+		}
+		mounts[k] = &res
+	}
+
+	return mounts, nil
 }
 
 func (c *Sys) EnableAuth(path, authType, desc string) error {
