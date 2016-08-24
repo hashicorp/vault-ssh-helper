@@ -9,7 +9,7 @@ var GitCommit string
 
 const Name = "vault-ssh-helper"
 const Version = "0.1.2"
-const VersionPrerelease = "dev"
+const VersionPrerelease = ""
 
 // formattedVersion returns a formatted version string which includes the git
 // commit and development information.
