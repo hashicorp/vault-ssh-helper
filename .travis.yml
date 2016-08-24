@@ -3,9 +3,7 @@ sudo: false
 language: go
 
 go:
-  - 1.6
-# tip is currently using go1.4.1
-# - tip
+  - 1.7
 
 matrix:
   allow_failures:
@@ -15,9 +13,6 @@ matrix:
 branches:
   only:
     - master
-
-install:
- - true
 
 script:
   - make
