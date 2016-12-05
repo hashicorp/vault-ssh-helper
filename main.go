@@ -136,6 +136,7 @@ Usage: vault-ssh-helper [options]
 Options:
 
   -config=<path>              The path on disk to a configuration file.
+  -dev                        Run the helper in "dev" mode, (such as testing or http)
   -verify-only                Verify the installation and communication with Vault server
   -version                    Display version.
 `
