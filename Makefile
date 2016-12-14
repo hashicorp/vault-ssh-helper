@@ -56,7 +56,6 @@ generate:
 # specifically designed to only pull deps, but not self.
 updatedeps:
 	go get -u github.com/mitchellh/gox
-	go get -u golang.org/x/tools/cmd/vet
 	echo $$(go list ./... | grep -v /vendor/) \
 		| xargs go list -f '{{ join .Deps "\n" }}{{ printf "\n" }}{{ join .TestImports "\n" }}' \
 		| grep -v github.com/hashicorp/$(NAME) \
