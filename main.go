@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/vault-ssh-helper/helper"
 	"github.com/hashicorp/vault/api"
 )
@@ -112,6 +113,10 @@ func Run(args []string) error {
 
 		// Removing the terminator
 		otp = strings.TrimSuffix(string(otpBytes), string('\x00'))
+		_, err = uuid.ParseUUID(otp)
+		if err != nil {
+			return err
+		}
 	}
 
 	// If OTP is echo request, this will be a verify request. Otherwise, this

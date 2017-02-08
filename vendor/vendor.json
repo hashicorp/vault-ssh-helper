@@ -33,6 +33,12 @@
 			"revisionTime": "2016-05-03T14:34:40Z"
 		},
 		{
+			"checksumSHA1": "mAkPa/RLuIwN53GbwIEMATexams=",
+			"path": "github.com/hashicorp/go-uuid",
+			"revision": "64130c7a86d732268a38cb04cfbaf0cc987fda98",
+			"revisionTime": "2016-07-17T02:21:40Z"
+		},
+		{
 			"checksumSHA1": "8E3sekKdBZ38W0UFwONoZb0txbE=",
 			"path": "github.com/hashicorp/hcl",
 			"revision": "baeb59c710717b06aac1dbe2270e8192ec593244",
