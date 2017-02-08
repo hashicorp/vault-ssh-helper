@@ -1,3 +1,8 @@
+## 0.1.3 (February 8 2017)
+
+SECURITY CHANGES:
+  * Verify that OTPs conform to UUID format [7a831a5]
+
 ## 0.1.2 (August 24 2016)
 
 IMPROVEMENTS:
