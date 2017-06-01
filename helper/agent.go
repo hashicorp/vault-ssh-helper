@@ -70,6 +70,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// the network interface addresses of the machine in which helper is
 	// running. OR it should be present in allowed_cidr_list.
 	if err := validateIP(resp.IP, req.Config.AllowedCidrList); err != nil {
+		log.Printf("[INFO] failed to validate IP: %v", err)
 		return err
 	}
 
@@ -78,6 +79,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// specific role names, one of these should match the the role name in
 	// the response for the authentication to succeed.
 	if err := validateRoleName(resp.RoleName, req.Config.AllowedRoles); err != nil {
+		log.Printf("[INFO] failed to validate role name: %v", err)
 		return err
 	}
 
