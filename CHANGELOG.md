@@ -1,4 +1,4 @@
-## 0.1.4 (Unreleased)
+## 0.1.4 (November 8 2017)
 
 SECURITY:
 
