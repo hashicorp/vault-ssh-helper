@@ -8,7 +8,7 @@ import (
 var GitCommit string
 
 const Name = "vault-ssh-helper"
-const Version = "0.1.3"
+const Version = "0.1.4"
 const VersionPrerelease = ""
 
 // formattedVersion returns a formatted version string which includes the git
