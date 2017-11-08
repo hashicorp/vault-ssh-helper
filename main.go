@@ -56,7 +56,7 @@ func Run(args []string) error {
 
 	flags.Usage = func() {
 		fmt.Printf("%s\n", Help())
-		os.Exit(0)
+		os.Exit(1)
 	}
 
 	if err := flags.Parse(args); err != nil {
