@@ -1,6 +1,11 @@
+## 0.1.4 (Unreleased)
+
+SECURITY:
+  * Make a safe exit when displaying usage text [GH-32]
+
 ## 0.1.3 (February 8 2017)
 
-SECURITY CHANGES:
+SECURITY:
   * Verify that OTPs conform to UUID format [7a831a5]
 
 ## 0.1.2 (August 24 2016)
@@ -16,7 +21,7 @@ UPGRADE NOTES:
 
 ## 0.1.1 (February 25 2016)
 
-SECURITY CHANGES:
+SECURITY:
   * Introduced `dev` mode. If `dev` mode is not activated, `vault-ssh-helper`
     can only communicate with Vault that has TLS enabled [f7a8707]
 
