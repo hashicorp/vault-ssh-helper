@@ -1,6 +1,10 @@
 vault-ssh-helper[![Build Status](https://travis-ci.org/hashicorp/vault-ssh-helper.svg)](https://travis-ci.org/hashicorp/vault-ssh-helper)
 ===============
 
+**Please note**: We take Vault's security and our users' trust very seriously. If you believe you have found a security issue in Vault, _please responsibly disclose_ by contacting us at [security@hashicorp.com](mailto:security@hashicorp.com).
+
+----
+
 `vault-ssh-helper` is a counterpart to [HashiCorp
 Vault's](https://github.com/hashicorp/vault) SSH backend. It allows a machine
 to consume One-Time-Passwords (OTP) created by Vault servers by allowing them
