@@ -59,7 +59,7 @@ You'll first need Go installed on your machine (version 1.8+ is required).
 
 Install `Go` on your machine and set `GOPATH` accordingly. Clone this
 repository into $GOPATH/src/github.com/hashicorp/vault-ssh-helper. Install all
-of the dependant binaries like `godep`, `gox`, `vet`, etc. by bootstrapping the
+of the dependent binaries like `godep`, `gox`, `vet`, etc. by bootstrapping the
 environment:
 
 ```shell
