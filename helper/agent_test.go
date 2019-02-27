@@ -32,3 +32,23 @@ func TestBelongsToCIDR(t *testing.T) {
 		t.Fatalf("expected error")
 	}
 }
+
+func TestValidateRoleName(t *testing.T) {
+	allowedRoles := "*"
+	err := validateRoleName("foo", allowedRoles)
+	if err != nil {
+		t.Fatalf("Role 'foo' not found in %s", allowedRoles)
+	}
+
+	allowedRoles = "bar, foo"
+	err = validateRoleName("foo", allowedRoles)
+	if err != nil {
+		t.Fatalf("Role 'foo' not found in %s", allowedRoles)
+	}
+
+	allowedRoles = "f*"
+	err = validateRoleName("foo", allowedRoles)
+	if err != nil {
+		t.Fatalf("Role 'foo' not found in %s", allowedRoles)
+	}
+}

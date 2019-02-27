@@ -5,6 +5,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/hashicorp/vault/api"
@@ -116,6 +117,19 @@ func validateRoleName(respRoleName, allowedRoles string) error {
 		// validation succeeds.
 		if strings.TrimSpace(role) == respRoleName {
 			return nil
+		}
+
+		if strings.Contains(role, "*") {
+			roleRegexp, err := regexp.Compile(strings.Replace(role, "*", ".*", -1))
+			if err != nil {
+				log.Printf("Can't compile regexp for: %s\n", role)
+				// don't fail so this is backwards-compatible, just check the next role name
+				continue
+			}
+			if roleRegexp.MatchString(respRoleName) {
+				log.Printf("%s matches %s\n", role, respRoleName)
+				return nil
+			}
 		}
 	}
 	return fmt.Errorf("role name in the verification response not matching any of the allowed_roles")
