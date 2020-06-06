@@ -92,14 +92,15 @@ func Run(args []string) error {
 		return err
 	}
 
-	// Logging SSH mount point since SSH backend mount point at Vault server
-	// can vary and helper has no way of knowing it automatically. ssh-helper reads
-	// the mount point from the configuration file and uses the same to talk
+	// Logging namespace and SSH mount point since SSH backend mount point at Vault server
+	// can vary and helper has no way of knowing these automatically. ssh-helper reads
+	// the namespace and mount point from the configuration file and uses the same to talk
 	// to Vault. In case of errors, this can be used for debugging.
 	//
 	// If mount point is not mentioned in the config file, default mount point
 	// of the SSH backend will be used.
 	log.Printf("[INFO] using SSH mount point: %s", clientConfig.SSHMountPoint)
+	log.Printf("[INFO] using namespace: %s", clientConfig.Namespace)
 	var otp string
 	if verifyOnly {
 		otp = api.VerifyEchoRequest

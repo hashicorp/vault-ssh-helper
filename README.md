@@ -121,6 +121,7 @@ please see the [HCL Specification](https://github.com/hashicorp/hcl).
 |-------------------|-----------|
 |`vault_addr`       |[Required] Address of the Vault server.
 |`ssh_mount_point`  |[Required] Mount point of SSH backend in Vault server.
+|`namespace`        |Namespace of the SSH mount. (Vault Enterprise only)
 |`ca_cert`          |Path of a PEM-encoded CA certificate file used to verify the Vault server's TLS certificate. `-dev` mode ignores this value.
 |`ca_path`          |Path to directory of PEM-encoded CA certificate files used to verify the Vault server's TLS certiciate. `-dev` mode ignores this value.
 |`tls_skip_verify`  |Skip TLS certificate verification. Use with caution.
