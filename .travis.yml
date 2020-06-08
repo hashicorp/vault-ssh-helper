@@ -9,7 +9,6 @@ matrix:
   allow_failures:
     - go:tip
 
-# whitelist master branch
 branches:
   only:
     - master
