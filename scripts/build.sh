@@ -40,14 +40,13 @@ fi
 
 if ! which gox > /dev/null; then
     echo "==> Installing gox..."
-    go get -u github.com/mitchellh/gox
+    GO111MODULE=off go get -u github.com/mitchellh/gox
 fi
 
 # Build!
 echo "==> Building..."
 gox \
     -os="${XC_OS}" \
-    -mod="mod" \
     -arch="${XC_ARCH}" \
     -ldflags "-X github.com/hashicorp/vault-ssh-helper/main.GitCommit=${GIT_COMMIT}${GIT_DIRTY}" \
     -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-helper" \

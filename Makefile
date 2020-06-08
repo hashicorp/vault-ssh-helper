@@ -55,7 +55,7 @@ generate:
 # updatedeps installs all the dependencies needed to run and build - this is
 # specifically designed to only pull deps, but not self.
 updatedeps:
-	go get -u github.com/mitchellh/gox
+	GO111MODULE=off go get -u github.com/mitchellh/gox
 	echo $$(go list ./... | grep -v /vendor/) \
 		| xargs go list -f '{{ join .Deps "\n" }}{{ printf "\n" }}{{ join .TestImports "\n" }}' \
 		| grep -v github.com/hashicorp/$(NAME) \
