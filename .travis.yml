@@ -3,7 +3,7 @@ sudo: false
 language: go
 
 go:
-  - 1.11
+  - 1.14
 
 matrix:
   allow_failures:
