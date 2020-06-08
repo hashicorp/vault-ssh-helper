@@ -40,7 +40,7 @@ fi
 
 if ! which gox > /dev/null; then
     echo "==> Installing gox..."
-    go get -u github.com/mitchellh/gox
+    GO111MODULE=off go get -u github.com/mitchellh/gox
 fi
 
 # Build!
