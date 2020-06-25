@@ -31,6 +31,7 @@ echo "==> Removing old directory..."
 rm -f bin/*
 rm -rf pkg/*
 mkdir -p bin/
+mkdir -p pkg/
 
 # If its dev mode, only build for ourself
 if [ "${DEV}x" != "x" ]; then
@@ -49,7 +50,7 @@ gox \
     -os="${XC_OS}" \
     -arch="${XC_ARCH}" \
     -ldflags "-X github.com/hashicorp/vault-ssh-helper/main.GitCommit=${GIT_COMMIT}${GIT_DIRTY}" \
-    -output "pkg/{{.OS}}_{{.Arch}}/vault-ssh-helper" \
+    -output "pkg/bin/{{.OS}}_{{.Arch}}/vault-ssh-helper" \
     .
 
 # Move all the compiled things to the $GOPATH/bin
@@ -58,7 +59,7 @@ IFS=: MAIN_GOPATH=($GOPATH)
 IFS=$OLDIFS
 
 # Copy our OS/Arch to the bin/ directory
-DEV_PLATFORM="./pkg/$(go env GOOS)_$(go env GOARCH)"
+DEV_PLATFORM="./pkg/bin/$(go env GOOS)_$(go env GOARCH)"
 for F in $(find ${DEV_PLATFORM} -mindepth 1 -maxdepth 1 -type f); do
     cp ${F} bin/
     cp ${F} ${MAIN_GOPATH}/bin/
@@ -67,7 +68,7 @@ done
 if [ "${DEV}x" = "x" ]; then
     # Zip and copy to the dist dir
     echo "==> Packaging..."
-    for PLATFORM in $(find ./pkg -mindepth 1 -maxdepth 1 -type d); do
+    for PLATFORM in $(find ./pkg/bin -mindepth 1 -maxdepth 1 -type d); do
         OSARCH=$(basename ${PLATFORM})
         echo "--> ${OSARCH}"
 

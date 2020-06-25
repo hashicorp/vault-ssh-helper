@@ -1,3 +1,14 @@
+## Unreleased
+
+Features:
+
+  * Add support for namespaces [GH-44](https://github.com/hashicorp/vault-ssh-helper/pull/44)
+
+Improvements:
+
+Bugs:
+
+
 ## 0.1.4 (November 8 2017)
 
 SECURITY:
