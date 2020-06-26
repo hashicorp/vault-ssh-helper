@@ -21,6 +21,9 @@ dist: bin
 test: generate
 	TF_ACC= go test $(TEST) $(TESTARGS) -timeout=30s -parallel=4
 
+test-ci: generate
+	gotestsum --format=short-verbose --junitfile test-results/go/results.xml -- $(TEST) $(TESTARGS) -timeout=30s -parallel=4
+
 # testacc runs acceptance tests
 testacc: generate
 	@if [ "$(TEST)" = "./..." ]; then \

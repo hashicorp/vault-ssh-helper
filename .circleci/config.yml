@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  build:
+    docker:
+    - image: circleci/golang:1.14.4
+    steps:
+    - checkout
+    - run:
+        name: "Build package"
+        command: |
+            make bin
+    - run:
+        name: "Run tests"
+        command: |
+            mkdir -p test-results/go
+            make test-ci
+    # save build to CircleCI
+    - store_artifacts:
+        path: pkg
+    - store_artifacts:
+        path: test-results
+    - store_test_results:
+        path: test-results
