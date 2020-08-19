@@ -1,3 +1,11 @@
+## Unreleased
+
+SECURITY:
+
+- HashiCorp vault-ssh-helper up to and including version 0.1.6 incorrectly accepted Vault-issued 
+  SSH OTPs for the subnet in which a host's network interface was located, rather than the specific IP address 
+  assigned to that interface. Assigned CVE-2020-24359, fixed in 0.2.0.
+
 ## 0.1.6 (June 26, 2020)
 
 Features:
