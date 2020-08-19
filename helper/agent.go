@@ -10,6 +10,9 @@ import (
 	"github.com/hashicorp/vault/api"
 )
 
+// This allows the testing of the validateIPs function
+var netInterfaceAddrs = net.InterfaceAddrs
+
 // Structure representing the ssh-helper's verification request.
 type SSHVerifyRequest struct {
 	// Http client to communicate with Vault
@@ -131,23 +134,20 @@ func validateIP(ipStr string, cidrList string) error {
 	ip := net.ParseIP(ipStr)
 
 	// Scanning network interfaces to find an address match
-	interfaces, err := net.Interfaces()
+	interfaceAddrs, err := netInterfaceAddrs()
 	if err != nil {
 		return err
 	}
-	for _, iface := range interfaces {
-		addrs, err := iface.Addrs()
-		if err != nil {
-			return err
+	for _, addr := range interfaceAddrs {
+		var base_addr net.IP
+		switch ipAddr := addr.(type) {
+		case *net.IPNet: //IPv4
+			base_addr = ipAddr.IP
+		case *net.IPAddr: //IPv6
+			base_addr = ipAddr.IP
 		}
-		for _, addr := range addrs {
-			belongs, err := belongsToCIDR(ip, addr.String())
-			if err != nil {
-				return err
-			}
-			if belongs {
-				return nil
-			}
+		if (base_addr.String() == ip.String()) {
+			return nil
 		}
 	}
 
