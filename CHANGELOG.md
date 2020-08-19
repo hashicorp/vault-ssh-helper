@@ -1,4 +1,4 @@
-## Unreleased
+## 0.2.0 (August 19, 2020)
 
 SECURITY:
 
