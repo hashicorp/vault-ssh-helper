@@ -1,3 +1,9 @@
+## Unreleased
+
+BUG FIXES:
+
+  * Update ssh-helper's `Version` to properly reflect its release version
+
 ## 0.2.0 (August 19, 2020)
 
 SECURITY:
@@ -8,13 +14,9 @@ SECURITY:
 
 ## 0.1.6 (June 26, 2020)
 
-Features:
+FEATURES:
 
   * Add support for namespaces [GH-44](https://github.com/hashicorp/vault-ssh-helper/pull/44)
-
-Improvements:
-
-Bugs:
 
 
 ## 0.1.4 (November 8 2017)
