@@ -1,4 +1,4 @@
-TEST?=$$(go list ./... | grep -v /vendor/)
+TEST?=$$(go list ./...)
 NAME?=$(shell basename "$(CURDIR)")
 VERSION = $(shell awk -F\" '/^const Version/ { print $$2; exit }' version.go)
 
@@ -42,7 +42,7 @@ vet:
 	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
 		go get golang.org/x/tools/cmd/vet; \
 	fi
-	@go list -f '{{.Dir}}' ./... | grep -v /vendor/) \
+	@go list -f '{{.Dir}}' ./...) \
 		| grep -v '.*github.com/hashicorp/vault-ssh-helper$$' \
 		| xargs go tool vet ; if [ $$? -eq 1 ]; then \
 			echo ""; \
@@ -53,13 +53,13 @@ vet:
 # generate runs `go generate` to build the dynamically generated
 # source files.
 generate:
-	go generate $(go list ./... | grep -v /vendor/)
+	go generate $(go list ./...)
 
 # updatedeps installs all the dependencies needed to run and build - this is
 # specifically designed to only pull deps, but not self.
 updatedeps:
 	GO111MODULE=off go get -u github.com/mitchellh/gox
-	echo $$(go list ./... | grep -v /vendor/) \
+	echo $$(go list ./...) \
 		| xargs go list -f '{{ join .Deps "\n" }}{{ printf "\n" }}{{ join .TestImports "\n" }}' \
 		| grep -v github.com/hashicorp/$(NAME) \
 		| xargs go get -f -u -v
