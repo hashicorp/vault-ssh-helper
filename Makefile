@@ -1,6 +1,6 @@
 TEST?=$$(go list ./...)
 NAME?=$(shell basename "$(CURDIR)")
-VERSION = $(shell awk -F\" '/^const Version/ { print $$2; exit }' version.go)
+VERSION=$(shell awk -F\" '/^const Version/ { print $$2; exit }' version.go)
 
 default: dev
 
@@ -67,4 +67,7 @@ updatedeps:
 install: dev
 	@sudo cp bin/vault-ssh-helper /usr/local/bin
 
-.PHONY: default bin dev dist generate test vet updatedeps testacc install
+version:
+	@echo $(VERSION)
+
+.PHONY: default bin dev dist generate test vet updatedeps testacc install version
