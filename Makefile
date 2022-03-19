@@ -1,6 +1,9 @@
 TEST?=$$(go list ./...)
 NAME?=$(shell basename "$(CURDIR)")
 VERSION=$(shell awk -F\" '/^const Version/ { print $$2; exit }' version.go)
+GIT_COMMIT=$(shell git rev-parse HEAD)
+GIT_DIRTY=$(shell test -n "`git status --porcelain`" && echo "+CHANGES" || true)
+LD_FLAGS="-X github.com/hashicorp/vault-ssh-helper/main.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
 
 default: dev
 
@@ -67,7 +70,15 @@ updatedeps:
 install: dev
 	@sudo cp bin/vault-ssh-helper /usr/local/bin
 
+.PHONY: default bin dev dist generate test vet updatedeps testacc install
+
+# This is used for release builds by .github/workflows/build.yml
+.PHONY: version
 version:
 	@echo $(VERSION)
 
-.PHONY: default bin dev dist generate test vet updatedeps testacc install version
+.PHONY: build
+# This is used for release builds by .github/workflows/build.yml
+build:
+	@echo "--> Building $(NAME) $(VERSION)"
+	@go build -v -ldflags $(LD_FLAGS) -o dist/
