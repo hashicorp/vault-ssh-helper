@@ -1,4 +1,4 @@
-name: Test
+name: test
 
 # Run this workflow on pushes and manually
 on: [push, workflow_dispatch]
@@ -39,6 +39,9 @@ jobs:
       - uses: actions/setup-go@v2
         with:
           go-version: ${{ needs.get-go-version.outputs.go-version }}
+
+      - name: Install gotestsum
+        run: go install gotest.tools/gotestsum@v1.7.0
 
       - name: Build
         run: make bin
