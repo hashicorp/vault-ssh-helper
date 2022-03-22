@@ -8,7 +8,7 @@ project "vault-ssh-helper" {
   github {
     organization = "hashicorp"
     repository = "vault-ssh-helper"
-    release_branches = ["main"]
+    release_branches = ["main", "VAULT-5263/crt"]
   }
 }
 
