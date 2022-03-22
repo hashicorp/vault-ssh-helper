@@ -42,12 +42,12 @@ testrace:
 # vet runs the Go source code static analysis tool `vet` to find
 # any common errors.
 vet:
-	@go tool vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
+	@go vet 2>/dev/null ; if [ $$? -eq 3 ]; then \
 		go get golang.org/x/tools/cmd/vet; \
 	fi
-	@go list -f '{{.Dir}}' ./...) \
+	@go list -f '{{.Dir}}' ./... \
 		| grep -v '.*github.com/hashicorp/vault-ssh-helper$$' \
-		| xargs go tool vet ; if [ $$? -eq 1 ]; then \
+		| xargs go vet ; if [ $$? -eq 1 ]; then \
 			echo ""; \
 			echo "Vet found suspicious constructs. Please check the reported constructs"; \
 			echo "and fix them if necessary before submitting the code for reviewal."; \
