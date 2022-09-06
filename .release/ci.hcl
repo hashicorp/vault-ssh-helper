@@ -3,7 +3,7 @@ schema = "1"
 project "vault-ssh-helper" {
   team = "vault"
   slack {
-    notification_channel = "CRF6FFKEW"
+    notification_channel = "C03RXFX5M4L" // #feed-vault-releases
   }
   github {
     organization = "hashicorp"
