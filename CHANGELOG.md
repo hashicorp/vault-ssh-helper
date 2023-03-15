@@ -2,6 +2,7 @@
 
 IMPROVEMENTS:
 
+* Added `-log-level` command-line option [GH-77](https://github.com/hashicorp/vault-ssh-helper/pull/77)
 * Updated golang dependencies [GH-71](https://github.com/hashicorp/vault-ssh-helper/pull/71)
   * golang.org/x/crypto@v0.0.0-20220314234659-1baeb1ce4c0b
   * golang.org/x/sys@v0.0.0-20220412211240-33da011f77ad
