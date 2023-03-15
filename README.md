@@ -42,11 +42,12 @@ take advantage of its capabilities.
 `vault-ssh-helper [options]`
 
 ### Options
-|Option       |Description|
-|-------------|-----------|
-|`verify-only`|Verifies that `vault-ssh-helper` is installed correctly and is able to communicate with Vault.
-|`config`     |The path to the configuration file. Configuration options are detailed below.
-|`dev`        |`vault-ssh-helper` communicates with Vault with TLS disabled. This is NOT recommended for production use. Use with caution.
+| Option        | Description                                                                                                                 |
+|---------------|-----------------------------------------------------------------------------------------------------------------------------|
+| `verify-only` | Verifies that `vault-ssh-helper` is installed correctly and is able to communicate with Vault.                              |
+| `config`      | The path to the configuration file. Configuration options are detailed below.                                               |
+| `dev`         | `vault-ssh-helper` communicates with Vault with TLS disabled. This is NOT recommended for production use. Use with caution. |
+| `log-level`   | Level of logs to output. Defaults to `info`. Supported values are `off`, `trace`, `debug`, `info`, `warn`, and `error`.     |
 
 ## Download vault-ssh-helper
 

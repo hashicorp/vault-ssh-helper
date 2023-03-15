@@ -8,6 +8,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/vault/api"
 )
@@ -51,7 +52,7 @@ func testRun(t *testing.T, otp string, expectSuccess bool, errStr string) {
 	// Reset the offset to the beginning
 	tempFile.Seek(0, 0)
 
-	err = Run(args)
+	err = Run(hclog.Default(), args)
 	switch {
 	case expectSuccess:
 		if err != nil {
@@ -62,7 +63,7 @@ func testRun(t *testing.T, otp string, expectSuccess bool, errStr string) {
 			t.Fatalf("expected an error")
 		}
 		if errStr != "" && err.Error() != errStr {
-			t.Fatalf("expected a different error")
+			t.Fatalf("expected a different error: got %v expected %v", err, errStr)
 		}
 	}
 }
