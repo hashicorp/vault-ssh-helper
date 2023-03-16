@@ -7,10 +7,10 @@ import (
 	"flag"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"strings"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/go-uuid"
 	"github.com/hashicorp/vault-ssh-helper/helper"
 	"github.com/hashicorp/vault/api"
@@ -25,11 +25,12 @@ import (
 // After the installation and configuration of this helper, verify the installation
 // with -verify-only option.
 func main() {
-	err := Run(os.Args[1:])
+	log := hclog.Default()
+	err := Run(log, os.Args[1:])
 	if err != nil {
 		// All the errors are logged using this one statement. All the methods
 		// simply return appropriate error message.
-		log.Printf("[ERROR]: %s", err)
+		log.Error(err.Error())
 
 		// Since this is not a PAM module, exiting with appropriate error
 		// code does not make sense. Any non-zero exit value is considered
@@ -39,10 +40,10 @@ func main() {
 	os.Exit(0)
 }
 
-// Retrieves OTP from user and validates it with Vault server. Also, if -verify
-// option is chosen, a echo request message is sent to Vault instead of OTP. If
+// Run retrieves OTP from user and validates it with Vault server. Also, if -verify
+// option is chosen, an echo request message is sent to Vault instead of OTP. If
 // a proper echo message is responded, the verification will be successful.
-func Run(args []string) error {
+func Run(log hclog.Logger, args []string) error {
 	for _, arg := range args {
 		if arg == "version" || arg == "-v" || arg == "-version" || arg == "--version" {
 			fmt.Println(formattedVersion())
@@ -52,10 +53,12 @@ func Run(args []string) error {
 
 	var config string
 	var dev, verifyOnly bool
+	var logLevel string
 	flags := flag.NewFlagSet("ssh-helper", flag.ContinueOnError)
 	flags.StringVar(&config, "config", "", "")
 	flags.BoolVar(&verifyOnly, "verify-only", false, "")
 	flags.BoolVar(&dev, "dev", false, "")
+	flags.StringVar(&logLevel, "log-level", "info", "")
 
 	flags.Usage = func() {
 		fmt.Printf("%s\n", Help())
@@ -68,6 +71,8 @@ func Run(args []string) error {
 
 	args = flags.Args()
 
+	log.SetLevel(hclog.LevelFromString(logLevel))
+
 	if len(config) == 0 {
 		return fmt.Errorf("at least one config path must be specified with -config")
 	}
@@ -79,7 +84,7 @@ func Run(args []string) error {
 	}
 
 	if dev {
-		log.Printf("==> WARNING: Dev mode is enabled!")
+		log.Warn("Dev mode is enabled!")
 		if strings.HasPrefix(strings.ToLower(clientConfig.VaultAddr), "https://") {
 			return fmt.Errorf("unsupported scheme in 'dev' mode")
 		}
@@ -102,8 +107,8 @@ func Run(args []string) error {
 	//
 	// If mount point is not mentioned in the config file, default mount point
 	// of the SSH backend will be used.
-	log.Printf("[INFO] using SSH mount point: %s", clientConfig.SSHMountPoint)
-	log.Printf("[INFO] using namespace: %s", clientConfig.Namespace)
+	log.Info(fmt.Sprintf("using SSH mount point: %s", clientConfig.SSHMountPoint))
+	log.Info(fmt.Sprintf("using namespace: %s", clientConfig.Namespace))
 	var otp string
 	if verifyOnly {
 		otp = api.VerifyEchoRequest
@@ -125,7 +130,7 @@ func Run(args []string) error {
 
 	// If OTP is echo request, this will be a verify request. Otherwise, this
 	// will be a OTP validation request.
-	return helper.VerifyOTP(&helper.SSHVerifyRequest{
+	return helper.VerifyOTP(log, &helper.SSHVerifyRequest{
 		Client:     client,
 		MountPoint: clientConfig.SSHMountPoint,
 		OTP:        otp,
@@ -146,6 +151,8 @@ Options:
 
   -config=<path>              The path on disk to a configuration file.
   -dev                        Run the helper in "dev" mode, (such as testing or http)
+  -log-level                  Level of logs to output. Defaults to "info". Supported values are:
+                                "off", "trace", "debug", "info", "warn", and "error".
   -verify-only                Verify the installation and communication with Vault server
   -version                    Display version.
 `

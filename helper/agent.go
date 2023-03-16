@@ -5,18 +5,18 @@ package helper
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"strings"
 
+	"github.com/hashicorp/go-hclog"
 	"github.com/hashicorp/vault/api"
 )
 
 // This allows the testing of the validateIPs function
 var netInterfaceAddrs = net.InterfaceAddrs
 
-// Structure representing the ssh-helper's verification request.
+// SSHVerifyRequest represents the ssh-helper's verification request.
 type SSHVerifyRequest struct {
 	// Http client to communicate with Vault
 	Client *api.Client
@@ -33,7 +33,7 @@ type SSHVerifyRequest struct {
 	Config *api.SSHHelperConfig
 }
 
-// Reads the OTP from the prompt and sends the OTP to vault server. Server searches
+// VerifyOTP reads the OTP from the prompt and sends the OTP to vault server. Server searches
 // for an entry corresponding to the OTP. If there exists one, it responds with the
 // IP address and username associated with it. The username returned should match the
 // username for which authentication is requested (environment variable PAM_USER holds
@@ -46,7 +46,7 @@ type SSHVerifyRequest struct {
 // server can be established with the given configuration data. If OTP in the request
 // matches the echo request message, then the echo response message is expected in
 // the response, which indicates successful connection establishment.
-func VerifyOTP(req *SSHVerifyRequest) error {
+func VerifyOTP(log hclog.Logger, req *SSHVerifyRequest) error {
 	// Validating the OTP from Vault server. The response from server can have
 	// either the response message set OR username and IP set.
 	resp, err := req.Client.SSHHelperWithMountPoint(req.MountPoint).Verify(req.OTP)
@@ -58,7 +58,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// response and return
 	if req.OTP == api.VerifyEchoRequest {
 		if resp.Message == api.VerifyEchoResponse {
-			log.Printf("[INFO] vault-ssh-helper verification successful!")
+			log.Info("vault-ssh-helper verification successful!")
 			return nil
 		} else {
 			return fmt.Errorf("invalid echo response")
@@ -76,7 +76,7 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// the network interface addresses of the machine in which helper is
 	// running. OR it should be present in allowed_cidr_list.
 	if err := validateIP(resp.IP, req.Config.AllowedCidrList); err != nil {
-		log.Printf("[INFO] failed to validate IP: %v", err)
+		log.Info(fmt.Sprintf("failed to validate IP: %v", err))
 		return err
 	}
 
@@ -84,21 +84,21 @@ func VerifyOTP(req *SSHVerifyRequest) error {
 	// Vault server, authentication succeeds. If AllowedRoles is set to
 	// specific role names, one of these should match the the role name in
 	// the response for the authentication to succeed.
-	if err := validateRoleName(resp.RoleName, req.Config.AllowedRoles); err != nil {
-		log.Printf("[INFO] failed to validate role name: %v", err)
+	if err := validateRoleName(log, resp.RoleName, req.Config.AllowedRoles); err != nil {
+		log.Info(fmt.Sprintf("failed to validate role name: %v", err))
 		return err
 	}
 
 	// Reaching here means that there were no problems. Returning nil will
 	// gracefully terminate the binary and client will be authenticated to
 	// establish the session.
-	log.Printf("[INFO] %s@%s authenticated!", resp.Username, resp.IP)
+	log.Info(fmt.Sprintf("%s@%s authenticated!", resp.Username, resp.IP))
 	return nil
 }
 
 // Checks if the role name present in the verification response matches
 // any of the allowed roles on the helper.
-func validateRoleName(respRoleName, allowedRoles string) error {
+func validateRoleName(log hclog.Logger, respRoleName, allowedRoles string) error {
 	// Fail the validation when invalid allowed_roles is mentioned
 	if allowedRoles == "" {
 		return fmt.Errorf("missing allowed_roles")
@@ -115,7 +115,7 @@ func validateRoleName(respRoleName, allowedRoles string) error {
 	}
 
 	roles := strings.Split(allowedRoles, ",")
-	log.Printf("roles: %s\n", roles)
+	log.Info(fmt.Sprintf("roles: %s", roles))
 
 	for _, role := range roles {
 		// If an allowed role matches the role name in the response,
@@ -149,7 +149,7 @@ func validateIP(ipStr string, cidrList string) error {
 		case *net.IPAddr: //IPv6
 			base_addr = ipAddr.IP
 		}
-		if (base_addr.String() == ip.String()) {
+		if base_addr.String() == ip.String() {
 			return nil
 		}
 	}
