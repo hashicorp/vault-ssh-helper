@@ -4,10 +4,14 @@ IMPROVEMENTS:
 
 * Added `-log-level` command-line option [GH-77](https://github.com/hashicorp/vault-ssh-helper/pull/77)
 * Updated golang dependencies [GH-71](https://github.com/hashicorp/vault-ssh-helper/pull/71)
-  * golang.org/x/crypto@v0.0.0-20220314234659-1baeb1ce4c0b
-  * golang.org/x/sys@v0.0.0-20220412211240-33da011f77ad
-  * golang.org/x/net@v0.0.0-20211209124913-491a49abca63
-  * golang.org/x/text@v0.3.7
+  * golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97 => v0.16.0
+  * golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c => v0.15.0
+  * golang.org/x/net v0.0.0-20210226172049-e18ecbb05110 => v0.19.0
+  * golang.org/x/text v0.3.3 => v0.14.0
+  * github.com/hashicorp/go-hclog v1.4.0 => v1.5.0
+  * github.com/hashicorp/go-uuid v1.0.2 => v1.0.3
+  * github.com/hashicorp/vault/api v1.4.1 => v1.10.0
+  * github.com/go-jose/go-jose/v3 v3.0.0 => v3.0.1
 
 ## 0.2.1 (December 15, 2020)
 
