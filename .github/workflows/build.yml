@@ -17,7 +17,7 @@ jobs:
         id: get-go-version
         run: |
           echo "Building with Go $(cat .go-version)"
-          echo "::set-output name=go-version::$(cat .go-version)"
+          echo "go-version=$(cat .go-version)" >> "${GITHUB_OUTPUT}"
 
   get-product-version:
     runs-on: ubuntu-latest
@@ -29,7 +29,7 @@ jobs:
         id: get-product-version
         run: |
           make version
-          echo "::set-output name=product-version::$(make version)"
+          echo "product-version=$(make version)" >> "${GITHUB_OUTPUT}"
 
   generate-metadata-file:
     needs: get-product-version
