@@ -6,7 +6,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 
@@ -115,7 +115,7 @@ func Run(log hclog.Logger, args []string) error {
 	} else {
 		// Reading the one-time-password from the prompt. This is enabled
 		// by supplying 'expose_authtok' option to pam module config.
-		otpBytes, err := ioutil.ReadAll(os.Stdin)
+		otpBytes, err := io.ReadAll(os.Stdin)
 		if err != nil {
 			return err
 		}
