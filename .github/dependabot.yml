@@ -1,0 +1,36 @@
+# Copyright (c) HashiCorp, Inc.
+# SPDX-License-Identifier: BUSL-1.1
+
+# See GitHub's docs for more information on this file:
+# https://docs.github.com/en/free-pro-team@latest/github/administering-a-repository/configuration-options-for-dependency-updates
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Check for updates to GitHub Actions the 1st of every month
+      interval: "monthly"
+    groups:
+      # Group all GitHub Actions updates into a single PR
+      actions:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gomod"
+    directories: 
+      - "/"
+    schedule:
+      # Check for updates to Go modules the 1st of every month
+      interval: "monthly"
+    groups:
+      # Group all Go module updates into one PR for version updates
+      # and one for security updates.
+      go:
+        patterns:
+          - "*"
+        applies-to: "version-updates"
+      go-security:
+        patterns:
+          - "*"
+        applies-to: "security-updates"
