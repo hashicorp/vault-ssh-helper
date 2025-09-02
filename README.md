@@ -190,14 +190,14 @@ are the default options; you may not need to set them explicitly but should
 verify their values if not.
 
 ```
-ChallengeResponseAuthentication yes
+KbdInteractiveAuthentication yes
 UsePAM yes
 PasswordAuthentication no
 ```
 
 |Option                               |Description |
 |-------------------------------------|------------|
-|`ChallengeResponseAuthentication yes`|[Required] Enable challenge response (keyboard-interactive) authentication.
+|`KbdInteractiveAuthentication yes`|[Required] Enable challenge response (keyboard-interactive) authentication.
 |`UsePAM yes`                         |[Required] Enable PAM authentication modules.
 |`PasswordAuthentication no`          |Disable password authentication.
 
