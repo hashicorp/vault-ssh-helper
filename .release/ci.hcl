@@ -28,65 +28,17 @@ event "build" {
 
   depends = ["merge"]
 }
-event "upload-dev" {
+event "prepare" {
 
-  action "upload-dev" {
+  action "prepare" {
     organization = "hashicorp"
     repository   = "crt-workflows-common"
-    workflow     = "upload-dev"
+    workflow     = "prepare"
     depends      = ["build"]
     config       = ""
   }
 
   depends = ["build"]
-
-  notification {
-    on = "fail"
-  }
-}
-event "security-scan-binaries" {
-
-  action "security-scan-binaries" {
-    organization = "hashicorp"
-    repository   = "crt-workflows-common"
-    workflow     = "security-scan-binaries"
-    depends      = null
-    config       = "security-scan.hcl"
-  }
-
-  depends = ["upload-dev"]
-
-  notification {
-    on = "fail"
-  }
-}
-event "sign" {
-
-  action "sign" {
-    organization = "hashicorp"
-    repository   = "crt-workflows-common"
-    workflow     = "sign"
-    depends      = null
-    config       = ""
-  }
-
-  depends = ["security-scan-binaries"]
-
-  notification {
-    on = "fail"
-  }
-}
-event "verify" {
-
-  action "verify" {
-    organization = "hashicorp"
-    repository   = "crt-workflows-common"
-    workflow     = "verify"
-    depends      = null
-    config       = ""
-  }
-
-  depends = ["sign"]
 
   notification {
     on = "fail"
