@@ -1,124 +1,136 @@
-# Copyright (c) HashiCorp, Inc.
-# SPDX-License-Identifier: MPL-2.0
-
-schema = "1"
+schema = "2"
 
 project "vault-ssh-helper" {
   team = "vault"
+
   slack {
-    notification_channel = "C03RXFX5M4L" // #feed-vault-releases
+    notification_channel = "C03RXFX5M4L"
   }
+
   github {
-    organization = "hashicorp"
-    repository = "vault-ssh-helper"
+    organization     = "hashicorp"
+    repository       = "vault-ssh-helper"
     release_branches = ["main"]
   }
 }
 
 event "merge" {
-  // "entrypoint" to use if build is not run automatically
-  // i.e. send "merge" complete signal to orchestrator to trigger build
 }
-
 event "build" {
-  depends = ["merge"]
+
   action "build" {
     organization = "hashicorp"
-    repository = "vault-ssh-helper"
-    workflow = "build"
+    repository   = "vault-ssh-helper"
+    workflow     = "build"
+    depends      = null
+    config       = ""
   }
-}
 
+  depends = ["merge"]
+}
 event "upload-dev" {
-  depends = ["build"]
+
   action "upload-dev" {
     organization = "hashicorp"
-    repository = "crt-workflows-common"
-    workflow = "upload-dev"
-    depends = ["build"]
+    repository   = "crt-workflows-common"
+    workflow     = "upload-dev"
+    depends      = ["build"]
+    config       = ""
   }
+
+  depends = ["build"]
 
   notification {
     on = "fail"
   }
 }
-
 event "security-scan-binaries" {
-  depends = ["upload-dev"]
+
   action "security-scan-binaries" {
     organization = "hashicorp"
-    repository = "crt-workflows-common"
-    workflow = "security-scan-binaries"
-    config = "security-scan.hcl"
+    repository   = "crt-workflows-common"
+    workflow     = "security-scan-binaries"
+    depends      = null
+    config       = "security-scan.hcl"
   }
+
+  depends = ["upload-dev"]
 
   notification {
     on = "fail"
   }
 }
-
 event "sign" {
-  depends = ["security-scan-binaries"]
+
   action "sign" {
     organization = "hashicorp"
-    repository = "crt-workflows-common"
-    workflow = "sign"
+    repository   = "crt-workflows-common"
+    workflow     = "sign"
+    depends      = null
+    config       = ""
   }
+
+  depends = ["security-scan-binaries"]
 
   notification {
     on = "fail"
   }
 }
-
 event "verify" {
-  depends = ["sign"]
+
   action "verify" {
     organization = "hashicorp"
-    repository = "crt-workflows-common"
-    workflow = "verify"
+    repository   = "crt-workflows-common"
+    workflow     = "verify"
+    depends      = null
+    config       = ""
   }
+
+  depends = ["sign"]
 
   notification {
     on = "fail"
   }
 }
-
-## These are promotion and post-publish events
-## they should be added to the end of the file after the verify event stanza.
-
 event "trigger-staging" {
-// This event is dispatched by the bob trigger-promotion command
-// and is required - do not delete.
 }
-
 event "promote-staging" {
-  depends = ["trigger-staging"]
+
   action "promote-staging" {
     organization = "hashicorp"
-    repository = "crt-workflows-common"
-    workflow = "promote-staging"
-    config = "release-metadata.hcl"
+    repository   = "crt-workflows-common"
+    workflow     = "promote-staging"
+    depends      = null
+    config       = "release-metadata.hcl"
   }
+
+  depends = ["trigger-staging"]
 
   notification {
     on = "always"
   }
-}
 
+  promotion-events {
+  }
+}
 event "trigger-production" {
-// This event is dispatched by the bob trigger-promotion command
-// and is required - do not delete.
 }
-
 event "promote-production" {
-  depends = ["trigger-production"]
+
   action "promote-production" {
     organization = "hashicorp"
-    repository = "crt-workflows-common"
-    workflow = "promote-production"
+    repository   = "crt-workflows-common"
+    workflow     = "promote-production"
+    depends      = null
+    config       = ""
   }
+
+  depends = ["trigger-production"]
 
   notification {
     on = "always"
+  }
+
+  promotion-events {
   }
 }
