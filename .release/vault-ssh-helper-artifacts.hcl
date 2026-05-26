@@ -8,5 +8,6 @@ artifacts {
     "vault-ssh-helper_${version}_linux_amd64.zip",
     "vault-ssh-helper_${version}_linux_arm.zip",
     "vault-ssh-helper_${version}_linux_arm64.zip",
+    "vault-ssh-helper_${version}_linux_s390x.zip",
   ]
 }
