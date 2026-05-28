@@ -1,12 +1,14 @@
 ## Unreleased
 
-## 0.2.3 (May 28, 2026)
+## 0.2.4 (May 28, 2026)
 
 IMPROVEMENTS:
 
-* Added support for linux/s390x architecture.
+* Added support for linux/s390x and linux/arm64 architectures.
 
 * Added `-log-level` command-line option [GH-77](https://github.com/hashicorp/vault-ssh-helper/pull/77)
+
+## 0.2.3 (unreleased)
 
 ## 0.2.2 (unreleased)
 
